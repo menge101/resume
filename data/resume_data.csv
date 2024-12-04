@@ -1,0 +1,120 @@
+pk,sk,text
+name,none,Nathan Menge
+city,none,Pittsburgh
+state,none,PA
+email,none,nathan.menge@gmail.com
+github,none,github.com/menge101
+en,heading#skills,Skills
+en,heading#exp,"Relevant Experience"
+en,heading#cci,"Certifications & Community Involvement"
+en,heading#early,"Early Career Experience"
+en,heading#school,"Education"
+en,skill#0,"AWS - a breadth of experience with DDB, EventBridge, ECS, EC2, Fargate, IAM, Lambda, RDS, S3, SQS, SNS, and more"
+en,skill#1,"Comfortable writing Infrastructure as Code using AWS CDK"
+en,skill#2,"Expert with Python and related tools"
+en,skill#3,"Highly proficient with Docker containers and related tooling"
+en,exp#0#name,"UPMC Enterprises"
+en,exp#0#start#month,February
+en,exp#0#start#year,2022
+en,exp#0#end#year,2025
+en,exp#0#end#month,January
+en,exp#0#title,"Senior Cloud Infrastructure Engineer"
+en,exp#0#location,"Pittsburgh, PA"
+en,exp#0#bullet#0,"Implemented an event driven security remediation system that allowed for nearly-instantaneous response to security events"
+en,exp#0#bullet#1,"Implemented a log forwarding and aggregation system allowing for simple cross-organization regulatory compliance"
+en,exp#0#bullet#2,"Implemented a StackSet deployment and auditing system to enable simple and consistent management of over 100 AWS accounts"
+en,exp#0#bullet#3,"Designed our team's approach to using AWS CDK with Python, including best practices and standards for development and security"
+en,exp#0#bullet#4,"Contributed to peer skill development"
+en,exp#1#name,"UPMC Enterprises"
+en,exp#1#start#month,April
+en,exp#1#start#year,2021
+en,exp#1#end#year,2022
+en,exp#1#end#month,February
+en,exp#1#title,"Software Test Engineer - Expert"
+en,exp#1#location,"Pittsburgh, PA"
+en,exp#1#bullet#0,"Researched Serverless technology and related processes to inform standards at both the team and company level"
+en,exp#1#bullet#1,"Developed a system to analyze product's Google Analytics data and dynamically create a load testing profile"
+en,exp#1#bullet#2,"Developed a system to enable control of Cloud Resources in our performance testing cluster from our chat-service"
+en,exp#2#name,"Duquesne Light Corporation"
+en,exp#2#start#month,January
+en,exp#2#start#year,2020
+en,exp#2#end#year,2021
+en,exp#2#end#month,April
+en,exp#2#title,"Continuous Testing Lead"
+en,exp#2#location,"Pittsburgh, PA"
+en,exp#2#bullet#0,"Principal engineer responsible for developing an automated testing framework using Python, Behave, Pytest, Pypom, Splinter, and Selenium"
+en,exp#2#bullet#1,"Worked with technical leadership to plan and develop the company's move to CI/CD processes for software releases"
+en,exp#2#bullet#2,"Built CI pipelines using Microsoft AzureDevops"
+en,exp#3#name,"Arcadia.io"
+en,exp#3#start#month,September
+en,exp#3#start#year,2017
+en,exp#3#end#year,2019
+en,exp#3#end#month,October
+en,exp#3#title,"Director of Software Engineering"
+en,exp#3#location,"Pittsburgh, PA"
+en,exp#3#bullet#0,"Managed a team of eleven engineers focused on using Ruby and Terraform to develop internal tools and testing infrastructure"
+en,exp#3#bullet#1,"Designed and oversaw the development of a highly scalable load testing system built using Python, JMeter, Taurus, and AWS Fargate"
+en,exp#3#bullet#2,"Directed development of an AWS-based Windows desktop application testing solution using EC2, CodeBuild, Terraform, Ruby, Appium, and Windows PowerShell"
+en,exp#3#bullet#3,"Built multiple CI pipelines using AWS CodeBuild and Terraform"
+en,exp#4#name,"Turnitin"
+en,exp#4#start#month,August
+en,exp#4#start#year,2015
+en,exp#4#end#year,2017
+en,exp#4#end#month,September
+en,exp#4#title,"Senior Quality Engineer"
+en,exp#4#location,"Pittsburgh, PA"
+en,exp#4#bullet#0,"Developed and maintained components of a highly-available microservices-based educational software product using Python and Docker on AWS"
+en,exp#4#bullet#1,"Built dashboards using React to communicate testing status to project leads hosted on AWS"
+en,exp#4#bullet#2,"Contributed to in-house developed container orchestration and discovery system using ECS on AWS"
+en,exp#4#bullet#3,"Created support and integrations into the Team's Slack bot to provide a convenient interface for internal tools"
+en,exp#4#bullet#4,"Architected and implemented test data generation microservices to create consistent testing data across the microservice cluster"
+en,exp#5#name,"UPMC Enterprises (f.k.a. Technology Development Center)"
+en,exp#5#start#month,August
+en,exp#5#start#year,2012
+en,exp#5#end#year,2015
+en,exp#5#end#month,August
+en,exp#5#title,"Lead Software Quality Engineer"
+en,exp#5#location,"Pittsburgh, PA"
+en,exp#5#bullet#0,"Researched and implemented solutions in Ruby using automation tools and frameworks"
+en,exp#5#bullet#1,"Managed the team’s time and  priorities as SCRUM master "
+en,exp#5#bullet#2,"Coordinated QA team resources and responsibilities as the Testing Lead for multiple teams"
+en,exp#5#bullet#3,"Advised other development teams on the topic of implementing test automation"
+en,edu#0#name,"The University of Pittsburgh, School of Engineering"
+en,edu#0#location,"Pittsburgh, PA"
+en,edu#0#achievement#0,"Bachelor of Science and Engineering in Computer Engineering"
+en,early#0#name,"Philips/Respironics – Validation & Verification"
+en,early#0#title,"Software Assurance Engineer"
+en,early#0#start-month,"December"
+en,early#0#start-year,"2008"
+en,early#0#end-month,"August"
+en,early#0#end-year,"2012"
+en,early#1#name,"Vocollect - Custom Systems"
+en,early#1#title,"Quality Assurance Engineer"
+en,early#1#start-month,"July"
+en,early#1#start-year,"2008"
+en,early#1#end-month,"December"
+en,early#1#end-year,"2008"
+en,early#2#name,"Management Science Associates"
+en,early#2#title,"Quality Assurance Analyst II"
+en,early#2#start-month,"June"
+en,early#2#start-year,"2006"
+en,early#2#end-month,"June"
+en,early#2#end-year,"2008"
+en,early#3#name,"Entigo Corporation"
+en,early#3#title,"Quality Assurance Analyst"
+en,early#3#start-month,"May"
+en,early#3#start-year,"2003"
+en,early#3#end-month,"June"
+en,early#3#end-year,"2006"
+en,cci#0#name,"AWS Solutions Architect - Associate"
+en,cci#1#name,"AWS Users' Group Pittsburgh"
+en,cci#1#start-month,"February"
+en,cci#1#start-year,"2018"
+en,cci#1#end-year,"2023"
+en,cci#1#title,"Organizer and frequent speaker"
+en,cci#1#achievement#0,"Grew the group from 0 to over 700 members"
+en,cci#1#achievement#1,"Built the group's website using AWS Amplify and JavaScript"
+en,cci#1#achievement#2,"Leads cooperative coding exercises to develop a "Meetup clone" utilizing AWS Amplify and JavaScript"
+en,cci#1#achievement#3,"Organizes monthly user group meetings"
+en,cci#1#achievement#4,"Recruits speakers from the local and national technical community"
+en,cci#1#achievement#5,"Leads a team of five to drive the organization toward our goals"

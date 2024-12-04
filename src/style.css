@@ -1,0 +1,59 @@
+body {
+    color: aliceblue;
+    background-color: #333333;
+    font-family: Calibri, Helvetica, Arial, sans-serif;
+    text-align: left;
+    display: block;
+    margin-left: 11vw;
+    margin-right: 11vw;
+    line-height: 1.2em;
+}
+
+ul.bullets {
+    list-style: circle;
+}
+
+.heading {
+    font-size: 1.3em;
+}
+
+.header {
+    text-align: center;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6em;
+}
+
+.header svg {
+    shape-rendering: auto;
+    background: rgb(33, 33, 33);"
+}
+
+div.header li.name {
+    font-size: 2em;
+}
+
+div.header li.other {
+    font-size: 1.1em
+}
+
+li.bullets {
+    list-style: circle;
+}
+
+div ul {
+    list-style: none;
+}
+
+div.early-career ul li span.title {
+    font-weight: bold;
+}
+
+li.early-career .dates {
+    font-size: .9em
+}
+
+ul.achievements {
+    padding-left: 0px
+}

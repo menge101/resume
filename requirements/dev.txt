@@ -1,0 +1,9 @@
+-r ./resume.txt
+aws-cdk-lib
+constructs
+invoke
+mypy
+pytest
+pytest-cov
+pytest-mock
+types-boto3

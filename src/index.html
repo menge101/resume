@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="./style.css">
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
+    <script src="/htmx.min.js"></script>
+    <title>Resume</title>
+</head>
+<body>
+<div class="header" hx-get="/ui/header" hx-trigger="load">
+    <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
+</div>
+<div class="skills" hx-get="/ui/skills" hx-trigger="load">
+    <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
+</div>
+<div class="experience" hx-get="/ui/experience" hx-trigger="load">
+    <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
+</div>
+<div class="cci" hx-get="/ui/cci" hx-trigger="load">
+    <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
+</div>
+<div class="early-career" hx-get="/ui/early" hx-trigger="load">
+    <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
+</div>
+<div class="education" hx-get="/ui/education" hx-trigger="load">
+    <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
+</div>
+</body>
+</html>

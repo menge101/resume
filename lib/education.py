@@ -1,0 +1,105 @@
+from basilico.attributes import Class
+from basilico.elements import Div, Element, Li, Span, Text, Ul
+from typing import Optional
+import boto3
+import lens
+import logging
+import os
+
+
+logging_level = os.environ.get("logging_level", "DEBUG").upper()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging_level)
+
+
+EDUCATION_HEADING_SK = "heading#school"
+
+
+class Education:
+    def __init__(self):
+        self.name = None
+        self.location = None
+        self.achievements = {}
+
+    def add(self, attr1: str, attr2: Optional[str], value: str) -> None:
+        if attr1 == "achievement":
+            if not attr2:
+                raise ValueError("Achievement index must be set")
+            self.achievements[int(attr2)] = value
+        else:
+            self.__setattr__(attr1, value)
+
+    def render(self) -> Element:
+        ach_list = [self.achievements[idx] for idx in range(len(self.achievements))]
+        template = Div(
+            Class("education"),
+            Ul(
+                Li(
+                    Span(Class("name"), Text(self.name)),
+                ),
+                Li(
+                    Ul(
+                        Class("achievements"),
+                        *(Li(Text(t)) for t in ach_list),
+                    )
+                ),
+            ),
+        )
+        return template
+
+
+def apply_template(heading: str, data: list[Education]) -> str:
+    template = Div(
+        Class("education"),
+        Span(Class("heading"), Text(heading)),
+        *(school.render() for school in data),
+    )
+    return template.string()
+
+
+def build(table_name: str, session_data: dict[str, str], **_kwargs) -> str:
+    ddb_client = boto3.client("dynamodb")
+    localization: str = session_data["local"]
+    heading: str = get_heading(ddb_client, localization, table_name)
+    exp_data: list[Education] = get_data(ddb_client, localization, table_name)
+    return apply_template(heading, exp_data)
+
+
+def get_data(client, localization: str, table_name: str) -> list[Education]:
+    kce = "pk = :pkval AND begins_with ( sk, :skval )"
+    response = client.query(
+        TableName=table_name,
+        KeyConditionExpression=kce,
+        ExpressionAttributeValues={
+            ":pkval": {"S": localization},
+            ":skval": {"S": "edu"},
+        },
+    )
+    return package_data(response["Items"])
+
+
+def get_heading(client, localization: str, table_name: str) -> str:
+    response = client.get_item(
+        TableName=table_name,
+        Key={"pk": {"S": localization}, "sk": {"S": EDUCATION_HEADING_SK}},
+    )
+    return lens.focus(response, ["Item", "text", "S"])
+
+
+def package_data(data: list[dict[str, str]]) -> list[Education]:
+    objects: dict[int, Education] = {}
+    for item in data:
+        key: str = lens.focus(item, ["sk", "S"])
+        text: str = lens.focus(item, ["text", "S"])
+        key_chain = key.split("#")
+        index = int(key_chain[1])
+        try:
+            objects[index]
+        except KeyError:
+            objects[index] = Education()
+        try:
+            fourth_key: Optional[str] = key_chain[3]
+        except (KeyError, IndexError):
+            fourth_key = None
+        objects[index].add(key_chain[2], fourth_key, text)
+    return [objects[inx] for inx in range(len(objects))]

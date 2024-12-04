@@ -1,6 +1,6 @@
-from infrastructure import logging
 import aws_cdk as cdk
+import deploys
 
 app = cdk.App()
-logging.Logging(app, "logging")
+deploys.Development(app, "development")
 app.synth()
