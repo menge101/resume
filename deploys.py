@@ -1,7 +1,6 @@
-from aws_cdk import aws_cloudfront as cf, RemovalPolicy, Stack, Stage
+from aws_cdk import aws_cloudfront as cf, Duration, RemovalPolicy, Stack, Stage
 from constructs import Construct
 from infrastructure.web import Web
-from typing import cast
 
 
 class Development(Stage):
@@ -13,7 +12,6 @@ class Development(Stage):
             removal_policy=RemovalPolicy.DESTROY,
             logging_level="DEBUG",
             tracing=True,
-            cache_policy=cast(cf.CachePolicy, cf.CachePolicy.CACHING_DISABLED),
         )
 
 
@@ -25,10 +23,16 @@ class Resume(Stack):
         removal_policy: RemovalPolicy,
         logging_level: str,
         tracing: bool,
-        cache_policy: cf.CachePolicy,
         **kwargs,
     ) -> None:
         super().__init__(scope, id_, **kwargs)
+        cache_policy = cf.CachePolicy(
+            self,
+            "dev-cache-policy",
+            cookie_behavior=cf.CacheCookieBehavior.all(),
+            default_ttl=Duration.seconds(1),
+            max_ttl=Duration.seconds(1),
+        )
         Web(
             self,
             "web-application-construct",

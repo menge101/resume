@@ -1,5 +1,8 @@
+from aws_xray_sdk.core import xray_recorder
+from basilico import htmx
 from basilico.attributes import Class
 from basilico.elements import Div, Element, Li, Raw, Span, Text, Ul
+from lib import return_
 import boto3
 import lens
 import logging
@@ -43,9 +46,12 @@ class EarlyCareer:
         )
 
 
+@xray_recorder.capture("## Applying early career template")
 def apply_template(data: list[EarlyCareer], heading: str) -> str:
     template = Div(
         Class("early-career"),
+        htmx.Get("/ui/early"),
+        htmx.Swap("outerHTML"),
         Span(Class("heading"), Text(heading)),
         Ul(
             *(datum.render() for datum in data),
@@ -54,14 +60,21 @@ def apply_template(data: list[EarlyCareer], heading: str) -> str:
     return template.string()
 
 
-def build(table_name: str, session_data: dict[str, str], **_kwargs) -> str:
+@xray_recorder.capture("## Building early career body")
+def build(
+    table_name: str, session_data: dict[str, str], **_kwargs
+) -> return_.Returnable:
+    logger.debug("Starting early career build")
     ddb_client = boto3.client("dynamodb")
     localization: str = session_data["local"]
     heading: str = get_heading(ddb_client, localization, table_name)
     data: list[EarlyCareer] = get_data(ddb_client, localization, table_name)
-    return apply_template(data=data, heading=heading)
+    return return_.http(
+        body=apply_template(data=data, heading=heading), status_code=200
+    )
 
 
+@xray_recorder.capture("## Getting early career data")
 def get_data(client, localization: str, table_name: str) -> list[EarlyCareer]:
     kce = "pk = :pkval AND begins_with ( sk, :skval )"
     response = client.query(
@@ -84,6 +97,7 @@ def get_heading(client, localization: str, table_name: str) -> str:
     return lens.focus(response, ["Item", "text", "S"])
 
 
+@xray_recorder.capture("## Packaging early career data")
 def package_data(items: list[dict[str, str]]) -> list[EarlyCareer]:
     data: dict[str, EarlyCareer] = {}
     for item in items:

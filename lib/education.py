@@ -1,5 +1,8 @@
+from aws_xray_sdk.core import xray_recorder
+from basilico import htmx
 from basilico.attributes import Class
 from basilico.elements import Div, Element, Li, Span, Text, Ul
+from lib import return_
 from typing import Optional
 import boto3
 import lens
@@ -31,25 +34,25 @@ class Education:
 
     def render(self) -> Element:
         ach_list = [self.achievements[idx] for idx in range(len(self.achievements))]
-        template = Div(
-            Class("education"),
-            Ul(
-                Li(
-                    Span(Class("name"), Text(self.name)),
-                ),
-                Li(
-                    Ul(
-                        Class("achievements"),
-                        *(Li(Text(t)) for t in ach_list),
-                    )
-                ),
+        template = Ul(
+            Li(
+                Span(Class("name"), Text(self.name)),
+            ),
+            Li(
+                Ul(
+                    Class("achievements"),
+                    *(Li(Text(t)) for t in ach_list),
+                )
             ),
         )
         return template
 
 
+@xray_recorder.capture("## Applying education template")
 def apply_template(heading: str, data: list[Education]) -> str:
     template = Div(
+        htmx.Get("/ui/education"),
+        htmx.Swap("outerHTML"),
         Class("education"),
         Span(Class("heading"), Text(heading)),
         *(school.render() for school in data),
@@ -57,14 +60,19 @@ def apply_template(heading: str, data: list[Education]) -> str:
     return template.string()
 
 
-def build(table_name: str, session_data: dict[str, str], **_kwargs) -> str:
+@xray_recorder.capture("## Building education body")
+def build(
+    table_name: str, session_data: dict[str, str], **_kwargs
+) -> return_.Returnable:
+    logger.debug("Starting education build")
     ddb_client = boto3.client("dynamodb")
-    localization: str = session_data["local"]
+    localization: str = session_data.get("local", "en")
     heading: str = get_heading(ddb_client, localization, table_name)
     exp_data: list[Education] = get_data(ddb_client, localization, table_name)
-    return apply_template(heading, exp_data)
+    return return_.http(body=apply_template(heading, exp_data), status_code=200)
 
 
+@xray_recorder.capture("## Getting education data")
 def get_data(client, localization: str, table_name: str) -> list[Education]:
     kce = "pk = :pkval AND begins_with ( sk, :skval )"
     response = client.query(
@@ -86,6 +94,7 @@ def get_heading(client, localization: str, table_name: str) -> str:
     return lens.focus(response, ["Item", "text", "S"])
 
 
+@xray_recorder.capture("## Packaging education data")
 def package_data(data: list[dict[str, str]]) -> list[Education]:
     objects: dict[int, Education] = {}
     for item in data:

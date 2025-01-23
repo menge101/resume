@@ -53,7 +53,6 @@ if [ -z "$1" ]; then
 fi
 
 check_for_changes
-rm -r $dest 2> /dev/null
 echo "Building function packages"
 build_logging
 build_resume

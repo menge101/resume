@@ -1,4 +1,15 @@
 from pytest import fixture
+import boto3
+
+
+@fixture
+def client():
+    return boto3.client("dynamodb")
+
+
+@fixture
+def resource():
+    return boto3.resource("dynamodb")
 
 
 @fixture

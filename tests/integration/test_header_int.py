@@ -1,13 +1,6 @@
 from pytest import fixture
-import boto3
-
-
 from lib import header
-
-
-@fixture
-def client():
-    return boto3.client("dynamodb")
+import boto3
 
 
 @fixture
@@ -26,4 +19,4 @@ def resource(table_name):
 
 
 def test_build(header_data, table_name):
-    assert header.build(table_name)
+    assert header.build(table_name, {})

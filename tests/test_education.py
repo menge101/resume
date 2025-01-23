@@ -40,11 +40,10 @@ def test_build(client_mock, data_response, session_data, table_name):
     client_mock.return_value.query.return_value = data_response
     observed = education.build(table_name, session_data)
     expected = (
-        '<div class="education"><span class="heading">yolo</span><div '
-        'class="education"><ul><li><span class="name">Pitt</span></li><li><ul '
-        'class="achievements"><li>Bachelor in yolo</li></ul></li></ul></div></div>'
+        '<div hx-get="/ui/education" hx-swap="outerHTML" class="education"><span class="heading">yolo</span><ul><li>'
+        '<span class="name">Pitt</span></li><li><ul class="achievements"><li>Bachelor in yolo</li></ul></li></ul></div>'
     )
-    assert observed == expected
+    assert observed["body"] == expected
 
 
 def test_build_no_achievement_index(

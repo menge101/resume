@@ -24,16 +24,18 @@ def test_error(exception, status_code):
         "isBase64Encoded": False,
         "statusCode": status_code,
         "headers": {"Content-Type": "text/html"},
+        "cookies": [],
     }
     assert observed == expected
 
 
 def test_html(body, status_code):
-    observed = return_.http(body, status_code)
-    expected = expected = {
+    observed = return_.http(body, status_code, {"test": "test"}, ["yo=lo"])
+    expected = {
         "body": "<div>yolo</div>",
         "isBase64Encoded": False,
         "statusCode": status_code,
-        "headers": {"Content-Type": "text/html"},
+        "headers": {"Content-Type": "text/html", "test": "test"},
+        "cookies": ["yo=lo"],
     }
     assert observed == expected

@@ -11,20 +11,21 @@
 <div class="header" hx-get="/ui/header" hx-trigger="load">
     <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
 </div>
-<div class="skills" hx-get="/ui/skills" hx-trigger="load">
+<div class="skills" hx-get="/ui/skills" hx-trigger="load" hx-swap="outerHTML">
     <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
 </div>
-<div class="experience" hx-get="/ui/experience" hx-trigger="load">
+<div id="experience" class="experience" hx-get="/ui/experience" hx-trigger="load" hx-swap="outerHTML">
     <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
 </div>
-<div class="cci" hx-get="/ui/cci" hx-trigger="load">
+<div class="cci" hx-get="/ui/cci" hx-trigger="load" hx-swap="outerHTML">
     <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
 </div>
-<div class="early-career" hx-get="/ui/early" hx-trigger="load">
+<div class="early-career" hx-get="/ui/early" hx-trigger="load" hx-swap="outerHTML">
     <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
 </div>
-<div class="education" hx-get="/ui/education" hx-trigger="load">
+<div class="education" hx-get="/ui/education" hx-trigger="load" hx-swap="outerHTML">
     <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
 </div>
+<div class="session" hx-get="/ui/session" hx-trigger="load"></div>
 </body>
 </html>
