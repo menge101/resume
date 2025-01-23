@@ -13,15 +13,15 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging_level)
 
 
-@xray_recorder.capture("dispatch")
+@xray_recorder.capture("## Dispatching request to element handler")
 def dispatch(
-    event: dict[str, str],
+    event: dict[str, Optional[str]],
     *,
     data_table_name: str,
-    elements: dict[str, Callable],
+    elements: dict[str, Callable[..., return_.Returnable]],
     expected_prefix: Optional[str] = None,
-    session_data: Optional[dict[str, str]] = None,
-) -> dict[str, str]:
+    session_data: dict[str, Optional[str]],
+) -> return_.Returnable:
     try:
         dispatch_info = DispatchInfo(event, expected_prefix)
     except ValueError as ve:
@@ -68,7 +68,7 @@ class DispatchInfo:
         errors = []
         if self.event.get("version") != "2.0":
             errors.append(
-                f"Invalid version: {self.event.get("version")}, should be 2.0"
+                f"Invalid version: {self.event.get('version')}, should be 2.0"
             )
         if self.method is False:
             errors.append("Method field not found")

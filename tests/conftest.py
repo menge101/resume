@@ -19,8 +19,13 @@ def project_root():
 
 
 @fixture
-def session_data():
-    return {"local": "en"}
+def session_data(session_id):
+    return {"local": "en", "id_": session_id}
+
+
+@fixture
+def session_id():
+    return "1234567890"
 
 
 @fixture

@@ -1,5 +1,8 @@
+from aws_xray_sdk.core import xray_recorder
+from basilico import htmx
 from basilico.attributes import Class
-from basilico.elements import Div, Li, Raw, Span, Text, Ul
+from basilico.elements import Div, Element, Li, Raw, Span, Text, Ul
+from lib import return_
 from typing import Optional
 import boto3
 import lens
@@ -45,25 +48,22 @@ class Cci:
             end_string = f"{self.end_month} {end_string}"
         return f"{start_string} - {end_string}"
 
-    def render(self) -> Div:
+    def render(self) -> Element:
         if self.simple():
-            return Div(Class("cci"), Ul(Li(Span(Class("name"), Text(self.name)))))
-        return Div(
-            Class("cci"),
-            Ul(
-                Li(
-                    Span(Class("name"), Text(self.name)),
-                    Raw("&nbsp;&nbsp;&#183;&nbsp;&nbsp;"),
-                    Span(Class("dates"), Text(self.dates())),
-                ),
-                Li(Class("cci"), Span(Class("title"), Text(self.title))),
-                Li(
-                    Ul(
-                        Class("bullets"),
-                        *(
-                            Li(Class("bullets"), Text(bullet))
-                            for bullet in self.achievements.values()
-                        ),
+            return Ul(Li(Span(Class("name"), Text(self.name))))
+        return Ul(
+            Li(
+                Span(Class("name"), Text(self.name)),
+                Raw("&nbsp;&nbsp;&#183;&nbsp;&nbsp;"),
+                Span(Class("dates"), Text(self.dates())),
+            ),
+            Li(Class("cci"), Span(Class("title"), Text(self.title))),
+            Li(
+                Ul(
+                    Class("bullets"),
+                    *(
+                        Li(Class("bullets"), Text(bullet))
+                        for bullet in self.achievements.values()
                     ),
                 ),
             ),
@@ -75,13 +75,14 @@ class Cci:
         )
 
 
-def apply_template(data: list[Div], heading: str) -> str:
+@xray_recorder.capture("## Applying cci template")
+def apply_template(data: list[Element], heading: str) -> str:
     template = Div(
         Class("cci"),
+        htmx.Get("/ui/cci"),
+        htmx.Swap("outerHTML"),
         Span(Class("heading"), Text(heading)),
-        Div(
-            *(datum for datum in data),
-        ),
+        *(datum for datum in data),
     )
     try:
         return template.string()
@@ -91,15 +92,22 @@ def apply_template(data: list[Div], heading: str) -> str:
         raise ae
 
 
-def build(table_name: str, session_data: dict[str, str], **_kwargs) -> str:
+@xray_recorder.capture("## Building cci body")
+def build(
+    table_name: str, session_data: dict[str, str], **_kwargs
+) -> return_.Returnable:
+    logger.debug("Starting cci build")
     ddb_client = boto3.client("dynamodb")
     localization: str = session_data["local"]
     heading: str = get_heading(ddb_client, localization, table_name)
-    data: list[Div] = get_data(ddb_client, localization, table_name)
-    return apply_template(data=data, heading=heading)
+    data: list[Element] = get_data(ddb_client, localization, table_name)
+    return return_.http(
+        body=apply_template(data=data, heading=heading), status_code=200
+    )
 
 
-def get_data(client, localization: str, table_name: str) -> list[Div]:
+@xray_recorder.capture("## Getting cci data")
+def get_data(client, localization: str, table_name: str) -> list[Element]:
     kce = "pk = :pkval AND begins_with ( sk, :skval )"
     response = client.query(
         TableName=table_name,
@@ -120,7 +128,8 @@ def get_heading(client, localization: str, table_name: str) -> str:
     return lens.focus(response, ["Item", "text", "S"])
 
 
-def package_data(rows: list[dict[str, str]]) -> list[Div]:
+@xray_recorder.capture("## Packaging cci data")
+def package_data(rows: list[dict[str, str]]) -> list[Element]:
     records: dict[str, Cci] = {}
     for row in rows:
         keychain = lens.focus(row, ["sk", "S"])

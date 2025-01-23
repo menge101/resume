@@ -100,39 +100,42 @@ def table_name():
     return "test-data-table"
 
 
-def test_dispatch(http_request_event, table_name, mock_element, prefix):
+def test_dispatch(http_request_event, table_name, mock_element, prefix, session_data):
     dispatch.dispatch(
         http_request_event,
         data_table_name=table_name,
         elements={"/element": mock_element},
         expected_prefix=prefix,
+        session_data=session_data,
     )
     assert mock_element.called
 
 
-def test_dispatch_post(post_event, table_name, mock_element, prefix):
+def test_dispatch_post(post_event, table_name, mock_element, prefix, session_data):
     observed_response = dispatch.dispatch(
         post_event,
         data_table_name=table_name,
         elements={"/element": mock_element},
         expected_prefix=prefix,
+        session_data=session_data,
     )
     assert observed_response["statusCode"] == 405
 
 
 def test_dispatch_unsupported_element(
-    unsupported_event, table_name, mock_element, prefix
+    unsupported_event, table_name, mock_element, prefix, session_data
 ):
     observed_response = dispatch.dispatch(
         unsupported_event,
         data_table_name=table_name,
         elements={"/element": mock_element},
         expected_prefix=prefix,
+        session_data=session_data,
     )
     assert observed_response["statusCode"] == 404
 
 
-def test_dispatch_missing_path(table_name, mock_element, prefix):
+def test_dispatch_missing_path(table_name, mock_element, prefix, session_data):
     event = {
         "requestContext": {"http": {"method": "GET"}, "requestId": "yolo"},
         "rawQueryString": "",
@@ -143,11 +146,12 @@ def test_dispatch_missing_path(table_name, mock_element, prefix):
         data_table_name=table_name,
         elements={"/element": mock_element},
         expected_prefix=prefix,
+        session_data=session_data,
     )
     assert observed_response["statusCode"] == 400
 
 
-def test_dispatch_missing_version(table_name, mock_element, prefix):
+def test_dispatch_missing_version(table_name, mock_element, prefix, session_data):
     event = {
         "requestContext": {
             "http": {"method": "GET", "path": "/ui/element"},
@@ -160,11 +164,12 @@ def test_dispatch_missing_version(table_name, mock_element, prefix):
         data_table_name=table_name,
         elements={"/element": mock_element},
         expected_prefix=prefix,
+        session_data=session_data,
     )
     assert observed_response["statusCode"] == 400
 
 
-def test_dispatch_missing_method(table_name, mock_element, prefix):
+def test_dispatch_missing_method(table_name, mock_element, prefix, session_data):
     event = {
         "requestContext": {"http": {"path": "/ui/element"}, "requestId": "yolo"},
         "rawQueryString": "",
@@ -174,11 +179,12 @@ def test_dispatch_missing_method(table_name, mock_element, prefix):
         data_table_name=table_name,
         elements={"/element": mock_element},
         expected_prefix=prefix,
+        session_data=session_data,
     )
     assert observed_response["statusCode"] == 400
 
 
-def test_dispatch_missing_request_id(table_name, mock_element, prefix):
+def test_dispatch_missing_request_id(table_name, mock_element, prefix, session_data):
     event = {
         "requestContext": {
             "http": {"path": "/ui/element", "method": "GET"},
@@ -190,11 +196,12 @@ def test_dispatch_missing_request_id(table_name, mock_element, prefix):
         data_table_name=table_name,
         elements={"/element": mock_element},
         expected_prefix=prefix,
+        session_data=session_data,
     )
     assert observed_response["statusCode"] == 400
 
 
-def test_dispatch_missing_query_string(table_name, mock_element, prefix):
+def test_dispatch_missing_query_string(table_name, mock_element, prefix, session_data):
     event = {
         "requestContext": {
             "http": {"path": "/ui/element", "method": "GET"},
@@ -206,14 +213,16 @@ def test_dispatch_missing_query_string(table_name, mock_element, prefix):
         data_table_name=table_name,
         elements={"/element": mock_element},
         expected_prefix=prefix,
+        session_data=session_data,
     )
     assert observed_response["statusCode"] == 400
 
 
-def test_no_expected_path(http_request_event, table_name, mock_element):
+def test_no_expected_path(http_request_event, table_name, mock_element, session_data):
     dispatch.dispatch(
         http_request_event,
         data_table_name=table_name,
         elements={"/ui/element": mock_element},
+        session_data=session_data,
     )
     assert mock_element.called

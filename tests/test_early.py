@@ -154,11 +154,12 @@ def test_build(client_mock, data_response, session_data, table_name):
     client_mock.return_value.query.return_value = data_response
     observed = early.build(table_name, session_data)
     expected = (
-        '<div class="early-career"><span class="heading">yolo</span><ul><li class="early-career"><span class='
-        '"name">Yolords</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="title">Lord of yolos</span>&nbsp;'
-        '&nbsp;&#183;&nbsp;&nbsp;<span class="dates">February 2022 - January 2022</span></li></ul></div>'
+        '<div class="early-career" hx-get="/ui/early" hx-swap="outerHTML"><span class="heading">yolo</span><ul><li cla'
+        'ss="early-career"><span class="name">Yolords</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="title">'
+        'Lord of yolos</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="dates">February 2022 - January 2022</span>'
+        "</li></ul></div>"
     )
-    assert observed == expected
+    assert observed["body"] == expected
 
 
 def test_real(client_mock, real_response, session_data, table_name):
@@ -166,17 +167,16 @@ def test_real(client_mock, real_response, session_data, table_name):
     client_mock.return_value.query.return_value = real_response
     observed = early.build(table_name, session_data)
     expected = (
-        '<div class="early-career"><span class="heading">yolo</span><ul><li class="early-career">'
-        '<span class="name">Philips/Respironics – Validation &amp; Verification</span>&nbsp;&nbsp;&#183;&nbsp;'
-        '&nbsp;<span class="title">Software Assurance Engineer</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;'
-        '<span class="dates">December 2008 - August 2008</span></li><li class="early-career">'
-        '<span class="name">Vocollect - Custom Systems</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="title">'
-        'Quality Assurance Engineer</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="dates">'
-        'July 2008 - December 2008</span></li><li class="early-career"><span class="name">Management Science '
-        'Associates</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="title">Quality Assurance Analyst II</span>'
-        '&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="dates">June 2006 - June 2006</span></li><li class="early-'
-        'career"><span class="name">Entigo Corporation</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="title">'
-        'Quality Assurance Analyst</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="dates">May 2003 - June 2003'
-        "</span></li></ul></div>"
+        '<div class="early-career" hx-get="/ui/early" hx-swap="outerHTML"><span class="heading">yolo</span><ul><li cl'
+        'ass="early-career"><span class="name">Philips/Respironics – Validation &amp; Verification</span>&nbsp;&nbsp;'
+        '&#183;&nbsp;&nbsp;<span class="title">Software Assurance Engineer</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span '
+        'class="dates">December 2008 - August 2008</span></li><li class="early-career"><span class="name">Vocollect - '
+        'Custom Systems</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="title">Quality Assurance Engineer</span>&nbsp;'
+        '&nbsp;&#183;&nbsp;&nbsp;<span class="dates">July 2008 - December 2008</span></li><li class="early-career">'
+        '<span class="name">Management Science Associates</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="title">'
+        'Quality Assurance Analyst II</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="dates">June 2006 - June 2006'
+        '</span></li><li class="early-career"><span class="name">Entigo Corporation</span>&nbsp;&nbsp;&#183;&nbsp;'
+        '&nbsp;<span class="title">Quality Assurance Analyst</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="dates">'
+        "May 2003 - June 2003</span></li></ul></div>"
     )
-    assert observed == expected
+    assert observed["body"] == expected

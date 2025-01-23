@@ -60,8 +60,9 @@ class Web(Construct):
             billing_mode=ddb.BillingMode.PAY_PER_REQUEST,
             partition_key=ddb.Attribute(name="pk", type=ddb.AttributeType.STRING),
             sort_key=ddb.Attribute(name="sk", type=ddb.AttributeType.STRING),
+            time_to_live_attribute="ttl",
         )
-        table.grant_read_data(lambda_role)
+        table.grant_read_write_data(lambda_role)
         function = lam.Function(
             self,
             "resume_fn",
@@ -74,6 +75,7 @@ class Web(Construct):
                 "logging_level": logging_level,
                 "ddb_table_name": table.table_name,
             },
+            memory_size=512,
         )
         fn_url = function.add_function_url(auth_type=lam.FunctionUrlAuthType.AWS_IAM)
         lambda_origin_access_control = cloudfront.FunctionUrlOriginAccessControl(

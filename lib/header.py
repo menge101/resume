@@ -1,6 +1,9 @@
+from basilico import htmx
 from basilico.attributes import Class
 from basilico.elements import Li, Raw, Text, Ul
 from boto3.dynamodb.types import TypeDeserializer
+from lib import return_
+from typing import Optional
 import boto3
 import logging
 import os
@@ -13,6 +16,9 @@ logger.setLevel(logging_level)
 
 def apply_template(data):
     template = Ul(
+        htmx.Trigger("click"),
+        htmx.Swap("outerHTML"),
+        htmx.Get("/ui/header"),
         Li(Class("name"), Text(data["name"])),
         Li(
             Class("other"),
@@ -27,7 +33,8 @@ def apply_template(data):
     return template.string()
 
 
-def build(table_name: str, _session_data: dict[str, str]):
+def build(table_name: str, _session_data: dict[str, Optional[str]]):
+    logger.debug("Starting header build")
     ddb_client = boto3.client("dynamodb")
     request = {
         table_name: {
@@ -40,10 +47,14 @@ def build(table_name: str, _session_data: dict[str, str]):
             ]
         }
     }
-    logger.debug(f"Request: {request}")
     response = ddb_client.batch_get_item(RequestItems=request)
+    logger.debug(f"Raw batch get item: {response}")
     unpacked_data = unpack_response(response, table_name)
-    return apply_template(unpacked_data)
+    logger.debug(f"Unpacked data: {unpacked_data}")
+    return return_.http(
+        body=apply_template(unpacked_data),
+        status_code=200,
+    )
 
 
 def unpack_response(response: dict, table_name: str) -> dict[str, list[str] | str]:

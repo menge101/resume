@@ -1,6 +1,8 @@
-import basilico.elements
-from basilico.attributes import Class
-from basilico.elements import Div, Li, Raw, Span, Text, Ul
+from aws_xray_sdk.core import xray_recorder
+from basilico import htmx
+from basilico.attributes import Class, ID
+from basilico.elements import Div, Element, Li, Raw, Span, Text, Ul
+from lib import return_
 from typing import Optional
 import boto3
 import lens
@@ -44,52 +46,59 @@ class Experience:
         else:
             return "Present"
 
-    def render(self) -> basilico.elements.Element:
+    def render(self) -> Element:
         bullet_list = [self.bullets[idx] for idx in range(len(self.bullets))]
-        template = Div(
+        template = Ul(
             Class("job"),
-            Ul(
-                Li(
-                    Span(Class("name"), Text(self.name)),
-                    Span(
-                        Class("dates"),
-                        Raw(
-                            f"&nbsp;&nbsp;&#183;&nbsp;&nbsp;{self.start_month} {self.start_year} - {self.end()}"
-                        ),
+            Li(
+                Span(Class("name"), Text(self.name)),
+                Span(
+                    Class("dates"),
+                    Raw(
+                        f"&nbsp;&nbsp;&#183;&nbsp;&nbsp;{self.start_month} {self.start_year} - {self.end()}"
                     ),
                 ),
-                Li(
-                    Class("title-and-loc"),
-                    Raw(f"{self.title}&nbsp;&nbsp;&#183;&nbsp;&nbsp;{self.location}"),
-                ),
-                Li(
-                    Ul(
-                        Class("bullets"),
-                        *(Li(Text(t)) for t in bullet_list),
-                    )
-                ),
+            ),
+            Li(
+                Class("title-and-loc"),
+                Raw(f"{self.title}&nbsp;&nbsp;&#183;&nbsp;&nbsp;{self.location}"),
+            ),
+            Li(
+                Ul(
+                    Class("bullets"),
+                    *(Li(Text(t)) for t in bullet_list),
+                )
             ),
         )
         return template
 
 
+@xray_recorder.capture("## Applying template to data")
 def apply_template(heading: str, data: list[Experience]) -> str:
     template = Div(
+        ID("experience"),
         Class("experience"),
+        htmx.Get("/ui/experience"),
+        htmx.Swap("outerHTML"),
         Span(Class("heading"), Text(heading)),
         *(job.render() for job in data),
     )
     return template.string()
 
 
-def build(table_name: str, session_data: dict[str, str], **_kwargs) -> str:
+@xray_recorder.capture("## Building experience body")
+def build(
+    table_name: str, session_data: dict[str, str], **_kwargs
+) -> return_.Returnable:
+    logger.debug("Starting experience build")
     ddb_client = boto3.client("dynamodb")
     localization: str = session_data["local"]
     heading: str = get_heading(ddb_client, localization, table_name)
     exp_data: list[Experience] = get_data(ddb_client, localization, table_name)
-    return apply_template(heading, exp_data)
+    return return_.http(body=apply_template(heading, exp_data), status_code=200)
 
 
+@xray_recorder.capture("## Querying experience data")
 def get_data(client, localization: str, table_name: str) -> list[Experience]:
     kce = "pk = :pkval AND begins_with ( sk, :skval )"
     response = client.query(
@@ -103,6 +112,7 @@ def get_data(client, localization: str, table_name: str) -> list[Experience]:
     return package_data(response["Items"])
 
 
+@xray_recorder.capture("## Querying heading")
 def get_heading(client, localization: str, table_name: str) -> str:
     response = client.get_item(
         TableName=table_name,
@@ -111,6 +121,7 @@ def get_heading(client, localization: str, table_name: str) -> str:
     return lens.focus(response, ["Item", "text", "S"])
 
 
+@xray_recorder.capture("## Parsing and repackaging experience data")
 def package_data(data: list[dict[str, str]]) -> list[Experience]:
     objects: dict[int, Experience] = {}
     for item in data:

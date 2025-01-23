@@ -73,14 +73,17 @@ def test_build(client_mock, data_response, session_data, table_name):
     client_mock.return_value.query.return_value = data_response
     observed = cci.build(table_name, session_data)
     expected = (
-        '<div class="cci"><span class="heading">yolo</span><div><div class="cci"><ul><li><span class="name">'
-        'Cert1</span></li></ul></div><div class="cci"><ul><li><span class="name">Thing</span>&nbsp;&nbsp;&#183;'
-        '&nbsp;&nbsp;<span class="dates">February 2022 - January 2025</span></li><li class="cci"><span class='
-        '"title">Title</span></li><li><ul class="bullets"><li class="bullets">Grew the group from 0 to over 700'
-        ' members</li><li class="bullets">Built the group&#x27;s website using AWS Amplify and JavaScript</li>'
-        "</ul></li></ul></div></div></div>"
+        '<div class="cci" hx-get="/ui/cci" hx-swap="outerHTML"><span '
+        'class="heading">yolo</span><ul><li><span '
+        'class="name">Cert1</span></li></ul><ul><li><span '
+        'class="name">Thing</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span '
+        'class="dates">February 2022 - January 2025</span></li><li class="cci"><span '
+        'class="title">Title</span></li><li><ul class="bullets"><li '
+        'class="bullets">Grew the group from 0 to over 700 members</li><li '
+        'class="bullets">Built the group&#x27;s website using AWS Amplify and '
+        "JavaScript</li></ul></li></ul></div>"
     )
-    assert observed == expected
+    assert observed["body"] == expected
 
 
 def test_invalid_achievement(
