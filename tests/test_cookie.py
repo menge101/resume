@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pytest import fixture, mark, raises
 from lib import cookie
 
@@ -10,7 +10,9 @@ def domain():
 
 @fixture
 def expiration():
-    return datetime(year=2025, month=1, day=1, hour=0, minute=0, second=0)
+    return datetime(
+        year=2025, month=1, day=1, hour=0, minute=0, second=0, tzinfo=timezone.utc
+    )
 
 
 @fixture
@@ -108,4 +110,4 @@ def test_expiration_time(expiration, mocker):
 
 
 def test_expiration_as_ttl(expiration):
-    assert cookie.expiration_as_ttl(expiration) == 1735707600
+    assert cookie.expiration_as_ttl(expiration) == 1735689600
