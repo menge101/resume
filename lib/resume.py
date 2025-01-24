@@ -1,5 +1,6 @@
 from aws_xray_sdk.core import xray_recorder
 from aws_xray_sdk.core import patch_all
+from basilico import attributes as attr, elements as el, htmx as hx
 from typing import Optional
 import boto3
 import logging
@@ -77,6 +78,7 @@ def handler(event: dict, context):
                 "/cci": cci.build,
                 "/": header.build,
                 "/session": session.build,
+                "/empty": empty,
             },
             expected_prefix="/ui",
             session_data=session_data,
@@ -89,3 +91,15 @@ def handler(event: dict, context):
     except Exception as e:
         logger.exception(e)
         return return_.error(e, 500)
+
+
+def empty(*_args, **_kwargs) -> return_.Returnable:
+    body = el.Div(
+        attr.ID("experience"),
+        attr.Class("empty"),
+        hx.Get("/ui/experience"),
+        hx.Swap("outerHTML"),
+        hx.Trigger("click"),
+        el.Text("empty"),
+    ).string()
+    return return_.http(body=body, status_code=200)

@@ -53,9 +53,6 @@ div.early-career ul li span.title {
     font-weight: bold;
 }
 
-div.experience {
-    transition: all ease-in-out 3s;
-}
 div.session {
     max-height: 0;
     visibility: hidden;

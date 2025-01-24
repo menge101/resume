@@ -78,8 +78,9 @@ def apply_template(heading: str, data: list[Experience]) -> str:
     template = Div(
         ID("experience"),
         Class("experience"),
-        htmx.Get("/ui/experience"),
+        htmx.Get("/ui/empty"),
         htmx.Swap("outerHTML"),
+        htmx.Trigger("click"),
         Span(Class("heading"), Text(heading)),
         *(job.render() for job in data),
     )
