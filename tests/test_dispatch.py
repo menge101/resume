@@ -1,5 +1,17 @@
 from pytest import fixture
-from lib import dispatch
+from lib.dispatch import Dispatcher
+
+
+@fixture
+def delete_event():
+    return {
+        "requestContext": {
+            "http": {"method": "DELETE", "path": "/ui/element"},
+            "requestId": "yolo",
+        },
+        "rawQueryString": "",
+        "version": "2.0",
+    }
 
 
 @fixture
@@ -86,8 +98,43 @@ def unsupported_event():
 
 
 @fixture
-def mock_element(mocker):
-    return mocker.Mock(name="mock_element")
+def mock_element():
+    class MockElement:
+        @staticmethod
+        def act(*_args, **_kwargs):
+            return {}, []
+
+        @staticmethod
+        def build(*_args, **_kwargs):
+            return {
+                "headers": {"Content-Type": "text/html"},
+                "isBase64Encoded": False,
+                "statusCode": 200,
+                "body": "yolo",
+                "cookies": [],
+            }
+
+    return MockElement()
+
+
+@fixture
+def mock_element_that_triggers_event():
+    class MockElement:
+        @staticmethod
+        def act(*_args, **_kwargs):
+            return {}, ["yolo"]
+
+        @staticmethod
+        def build(*_args, **_kwargs):
+            return {
+                "headers": {"Content-Type": "text/html"},
+                "isBase64Encoded": False,
+                "statusCode": 200,
+                "body": "yolo",
+                "cookies": [],
+            }
+
+    return MockElement()
 
 
 @fixture
@@ -100,38 +147,55 @@ def table_name():
     return "test-data-table"
 
 
-def test_dispatch(http_request_event, table_name, mock_element, prefix, session_data):
-    dispatch.dispatch(
-        http_request_event,
+def test_dispatcher(http_request_event, table_name, mock_element, prefix, session_data):
+    observed = Dispatcher(
         data_table_name=table_name,
         elements={"/element": mock_element},
-        expected_prefix=prefix,
-        session_data=session_data,
-    )
-    assert mock_element.called
+        prefix=prefix,
+    ).dispatch(http_request_event)
+    expected = {
+        "body": "yolo",
+        "cookies": [],
+        "headers": {"Content-Type": "text/html"},
+        "isBase64Encoded": False,
+        "statusCode": 200,
+    }
+    assert observed == expected
 
 
 def test_dispatch_post(post_event, table_name, mock_element, prefix, session_data):
-    observed_response = dispatch.dispatch(
-        post_event,
+    observed = Dispatcher(
         data_table_name=table_name,
         elements={"/element": mock_element},
-        expected_prefix=prefix,
-        session_data=session_data,
-    )
+        prefix=prefix,
+    ).dispatch(post_event)
+    expected = {
+        "body": "yolo",
+        "cookies": [],
+        "headers": {"Content-Type": "text/html"},
+        "isBase64Encoded": False,
+        "statusCode": 200,
+    }
+    assert observed == expected
+
+
+def test_dispatch_delete(delete_event, table_name, mock_element, prefix, session_data):
+    observed_response = Dispatcher(
+        data_table_name=table_name,
+        elements={"/element": mock_element},
+        prefix=prefix,
+    ).dispatch(delete_event)
     assert observed_response["statusCode"] == 405
 
 
 def test_dispatch_unsupported_element(
     unsupported_event, table_name, mock_element, prefix, session_data
 ):
-    observed_response = dispatch.dispatch(
-        unsupported_event,
+    observed_response = Dispatcher(
         data_table_name=table_name,
         elements={"/element": mock_element},
-        expected_prefix=prefix,
-        session_data=session_data,
-    )
+        prefix=prefix,
+    ).dispatch(unsupported_event)
     assert observed_response["statusCode"] == 404
 
 
@@ -141,13 +205,11 @@ def test_dispatch_missing_path(table_name, mock_element, prefix, session_data):
         "rawQueryString": "",
         "version": "2.0",
     }
-    observed_response = dispatch.dispatch(
-        event,
+    observed_response = Dispatcher(
         data_table_name=table_name,
         elements={"/element": mock_element},
-        expected_prefix=prefix,
-        session_data=session_data,
-    )
+        prefix=prefix,
+    ).dispatch(event)
     assert observed_response["statusCode"] == 400
 
 
@@ -159,13 +221,11 @@ def test_dispatch_missing_version(table_name, mock_element, prefix, session_data
         },
         "rawQueryString": "",
     }
-    observed_response = dispatch.dispatch(
-        event,
+    observed_response = Dispatcher(
         data_table_name=table_name,
         elements={"/element": mock_element},
-        expected_prefix=prefix,
-        session_data=session_data,
-    )
+        prefix=prefix,
+    ).dispatch(event)
     assert observed_response["statusCode"] == 400
 
 
@@ -174,13 +234,11 @@ def test_dispatch_missing_method(table_name, mock_element, prefix, session_data)
         "requestContext": {"http": {"path": "/ui/element"}, "requestId": "yolo"},
         "rawQueryString": "",
     }
-    observed_response = dispatch.dispatch(
-        event,
+    observed_response = Dispatcher(
         data_table_name=table_name,
         elements={"/element": mock_element},
-        expected_prefix=prefix,
-        session_data=session_data,
-    )
+        prefix=prefix,
+    ).dispatch(event)
     assert observed_response["statusCode"] == 400
 
 
@@ -191,13 +249,11 @@ def test_dispatch_missing_request_id(table_name, mock_element, prefix, session_d
         },
         "rawQueryString": "",
     }
-    observed_response = dispatch.dispatch(
-        event,
+    observed_response = Dispatcher(
         data_table_name=table_name,
         elements={"/element": mock_element},
-        expected_prefix=prefix,
-        session_data=session_data,
-    )
+        prefix=prefix,
+    ).dispatch(event)
     assert observed_response["statusCode"] == 400
 
 
@@ -208,21 +264,76 @@ def test_dispatch_missing_query_string(table_name, mock_element, prefix, session
             "requestId": "yolo",
         },
     }
-    observed_response = dispatch.dispatch(
-        event,
+    observed_response = Dispatcher(
         data_table_name=table_name,
         elements={"/element": mock_element},
-        expected_prefix=prefix,
-        session_data=session_data,
-    )
+        prefix=prefix,
+    ).dispatch(event)
     assert observed_response["statusCode"] == 400
 
 
-def test_no_expected_path(http_request_event, table_name, mock_element, session_data):
-    dispatch.dispatch(
-        http_request_event,
+def test_no_expected_path(table_name, mock_element, session_data):
+    event = {
+        "version": "2.0",
+        "requestContext": {
+            "http": {"path": "/element", "method": "GET"},
+            "requestId": "yolo",
+        },
+    }
+    observed = Dispatcher(
         data_table_name=table_name,
-        elements={"/ui/element": mock_element},
-        session_data=session_data,
-    )
-    assert mock_element.called
+        elements={"/element": mock_element},
+    ).dispatch(event)
+    expected = {
+        "body": "yolo",
+        "cookies": [],
+        "headers": {"Content-Type": "text/html"},
+        "isBase64Encoded": False,
+        "statusCode": 200,
+    }
+    assert observed == expected
+
+
+def test_dispatch_event_triggers_events(
+    table_name,
+    mock_element_that_triggers_event,
+    prefix,
+    session_data,
+    http_request_event,
+):
+    observed = Dispatcher(
+        data_table_name=table_name,
+        elements={"/element": mock_element_that_triggers_event},
+        prefix=prefix,
+    ).dispatch(http_request_event)
+    expected = {
+        "body": "yolo",
+        "cookies": [],
+        "headers": {"Content-Type": "text/html", "HX-Trigger": "yolo, "},
+        "isBase64Encoded": False,
+        "statusCode": 200,
+    }
+    assert observed == expected
+
+
+def test_act_raises_value_error(table_name, mocker, mock_element, session_data):
+    event = {
+        "version": "2.0",
+        "requestContext": {
+            "http": {"path": "/element", "method": "GET"},
+            "requestId": "yolo",
+        },
+    }
+    mocker.patch.object(mock_element, "act", side_effect=ValueError())
+    expected = {
+        "body": "<div>\nError: \n</div>",
+        "cookies": [],
+        "headers": {"Content-Type": "text/html"},
+        "isBase64Encoded": False,
+        "statusCode": 500,
+    }
+    observed = Dispatcher(
+        data_table_name=table_name,
+        elements={"/element": mock_element},
+    ).dispatch(event)
+    assert observed == expected

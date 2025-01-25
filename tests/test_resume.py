@@ -18,11 +18,6 @@ def event():
 
 
 @fixture
-def event_with_cookie(session_id):
-    return {"cookies": [f"id_={session_id}"]}
-
-
-@fixture
 def table(mocker):
     mocker.patch("lib.resume.os.environ", {"ddb_table_name": "testing"})
 
@@ -34,12 +29,12 @@ def table_mock(boto3_mock, mocker):
 
 
 def test_resume(context, event, mocker, table):
-    mocker.patch("lib.resume.dispatch", return_value=True)
+    mocker.patch("lib.resume.dispatch.Dispatcher.dispatch", return_value=True)
     assert resume.handler(event, context)
 
 
 def test_resume_error(context, event, mocker, table):
-    mocker.patch("lib.resume.dispatch", side_effect=ValueError)
+    mocker.patch("lib.resume.dispatch.Dispatcher.dispatch", side_effect=ValueError)
     expected = {
         "body": "<div>\nError: \n</div>",
         "headers": {"Content-Type": "text/html"},
@@ -52,7 +47,7 @@ def test_resume_error(context, event, mocker, table):
 
 
 def test_resume_exception(context, event, mocker, table):
-    mocker.patch("lib.resume.dispatch", side_effect=Exception)
+    mocker.patch("lib.resume.dispatch.Dispatcher.dispatch", side_effect=Exception)
     expected = {
         "body": "<div>\nError: \n</div>",
         "cookies": [],
@@ -73,17 +68,4 @@ def test_resume_no_table(context, event):
         "isBase64Encoded": False,
         "statusCode": 500,
     }
-    assert observed == expected
-
-
-def test_cookie_crumble(event_with_cookie, session_id):
-    observed = resume.cookie_crumble(event_with_cookie)
-    expected = session_id
-    assert observed == expected
-
-
-def test_handle_session(event_with_cookie, session_id, table_mock, table_name):
-    table_mock.return_value.get_item.return_value = {"Item": {"id_": session_id}}
-    observed = resume.handle_session(event_with_cookie, table_name)
-    expected = {"id_": session_id}
     assert observed == expected

@@ -1,3 +1,5 @@
+@import "basic.css";
+
 body {
     color: aliceblue;
     background-color: #333333;
@@ -9,14 +11,6 @@ body {
     line-height: 1.2em;
 }
 
-ul.bullets {
-    list-style: circle;
-}
-
-.heading {
-    font-size: 1.3em;
-}
-
 .header {
     text-align: center;
     display: block;
@@ -25,7 +19,7 @@ ul.bullets {
     line-height: 1.6em;
 }
 
-div img.loading-spinner {
+.loading-spinner {
     shape-rendering: auto;
     text-align: center;
     display: block;
@@ -41,30 +35,43 @@ div.header li.other {
     font-size: 1.1em
 }
 
-li.bullets {
-    list-style: circle;
-}
-
-div ul {
-    list-style: none;
-}
-
 div.early-career ul li span.title {
     font-weight: bold;
 }
 
-div.experience {
-    transition: all ease-in-out 3s;
-}
-div.session {
+.session {
     max-height: 0;
     visibility: hidden;
 }
 
-li.early-career .dates {
+.early-career .dates {
     font-size: .9em
 }
 
-ul.achievements {
+.achievements {
     padding-left: 0;
+}
+
+.language {
+    float: left;
+    position: absolute;
+    background-color: #333333;
+}
+
+.language ul {
+    padding: 0px;
+    margin: 0px;
+}
+
+.language ul li {
+    border-style: outset;
+    border-color: #494949;
+    display: flex;
+    align-content: center;
+}
+
+.language ul li img {
+    height: 1em;
+    padding-left: 3px;
+    border: white;
 }

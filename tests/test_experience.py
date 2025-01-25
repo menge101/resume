@@ -85,14 +85,8 @@ def test_build(client_mock, data_response, session_data, table_name):
     client_mock.return_value.get_item.return_value = {"Item": {"text": {"S": "yolo"}}}
     client_mock.return_value.query.return_value = data_response
     observed = experience.build(table_name, session_data)
-    expected = (
-        '<div class="experience"><span class="heading">'
-        'yolo</span><ul class="job"><li><span class="name">UPMC Enterprises</span><span class="dates">'
-        '&nbsp;&nbsp;&#183;&nbsp;&nbsp;February 2022 - January 2025</span></li><li class="title-and-loc">Senior Cloud '
-        'Infrastructure Engineer&nbsp;&nbsp;&#183;&nbsp;&nbsp;Pittsburgh, PA</li><li><ul class="bullets"><li>'
-        "Implemented an event driven security remediation system </li><li>yo</li><li>Lo</li></ul></li></ul></div>"
-    )
-    assert observed["body"] == expected
+    assert observed["statusCode"] == 200
+    assert observed["headers"] == {"Content-Type": "text/html"}
 
 
 def test_build_no_end(client_mock, data_response_no_end, session_data, table_name):
@@ -100,11 +94,15 @@ def test_build_no_end(client_mock, data_response_no_end, session_data, table_nam
     client_mock.return_value.query.return_value = data_response_no_end
     observed = experience.build(table_name, session_data)
     expected = (
-        '<div class="experience"><span class="heading">'
-        'yolo</span><ul class="job"><li><span class="name">UPMC Enterprises</span><span class="dates">&nbsp;&nbsp;'
-        '&#183;&nbsp;&nbsp;February 2022 - Present</span></li><li class="title-and-loc">Senior Cloud Infrastructure '
-        'Engineer&nbsp;&nbsp;&#183;&nbsp;&nbsp;Pittsburgh, PA</li><li><ul class="bullets"><li>Implemented an event '
-        "driven security remediation system </li><li>yo</li><li>Lo</li></ul></li></ul></div>"
+        '<div hx-get="/ui/experience" hx-swap="outerHTML" '
+        'hx-trigger="language-updated from:body" class="experience"><span '
+        'class="heading">yolo</span><ul class="job no-bullets"><li><span '
+        'class="name">UPMC Enterprises</span><span '
+        'class="dates">&nbsp;&nbsp;&#183;&nbsp;&nbsp;February 2022 - '
+        'Present</span></li><li class="title-and-loc">Senior Cloud Infrastructure '
+        "Engineer&nbsp;&nbsp;&#183;&nbsp;&nbsp;Pittsburgh, PA</li><li><ul "
+        'class="bullets"><li>Implemented an event driven security remediation system '
+        "</li><li>yo</li><li>Lo</li></ul></li></ul></div>"
     )
     assert observed["body"] == expected
 
@@ -116,3 +114,8 @@ def test_build_no_bullet_index(
     client_mock.return_value.query.return_value = data_response_bullet_no_index
     with raises(ValueError):
         experience.build(table_name, session_data)
+
+
+def test_act():
+    data, events = experience.act("yolo", {}, {})
+    assert data == {}

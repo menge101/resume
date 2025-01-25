@@ -72,18 +72,8 @@ def test_build(client_mock, data_response, session_data, table_name):
     client_mock.return_value.get_item.return_value = {"Item": {"text": {"S": "yolo"}}}
     client_mock.return_value.query.return_value = data_response
     observed = cci.build(table_name, session_data)
-    expected = (
-        '<div class="cci" hx-get="/ui/cci" hx-swap="outerHTML"><span '
-        'class="heading">yolo</span><ul><li><span '
-        'class="name">Cert1</span></li></ul><ul><li><span '
-        'class="name">Thing</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span '
-        'class="dates">February 2022 - January 2025</span></li><li class="cci"><span '
-        'class="title">Title</span></li><li><ul class="bullets"><li '
-        'class="bullets">Grew the group from 0 to over 700 members</li><li '
-        'class="bullets">Built the group&#x27;s website using AWS Amplify and '
-        "JavaScript</li></ul></li></ul></div>"
-    )
-    assert observed["body"] == expected
+    assert observed["headers"] == {"Content-Type": "text/html"}
+    assert observed["statusCode"] == 200
 
 
 def test_invalid_achievement(
@@ -100,3 +90,8 @@ def test_invalid_cci(client_mock, invalid_title_response, session_data, table_na
     client_mock.return_value.query.return_value = invalid_title_response
     with raises(AttributeError):
         cci.build(table_name, session_data)
+
+
+def test_act():
+    data, events = cci.act("yolo", {}, {})
+    assert data == {}

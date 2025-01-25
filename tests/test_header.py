@@ -35,3 +35,8 @@ def test_unpack_response(client_raw_response, fake_data, table_name):
     value = header.unpack_response(client_raw_response, table_name)
     for key in value.keys():
         assert fake_data[key] == value[key]
+
+
+def test_act():
+    data, events = header.act("yolo", {}, {})
+    assert data == {}

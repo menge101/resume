@@ -26,6 +26,9 @@ class Web(Construct):
         cache_policy: Optional[
             cloudfront.CachePolicy
         ] = cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        origin_policy: Optional[
+            cloudfront.OriginRequestPolicy
+        ] = cloudfront.OriginRequestPolicy.ALL_VIEWER,
     ) -> None:
         logging_level = logging_level.upper() if logging_level else "DEBUG"
         super().__init__(scope, id_)
@@ -53,7 +56,7 @@ class Web(Construct):
             auto_delete_objects=(removal_policy == RemovalPolicy.DESTROY),
         )
         bucket.grant_read(lambda_role)
-        table = ddb.Table(
+        self.table = ddb.Table(
             self,
             "data",
             removal_policy=removal_policy,
@@ -62,7 +65,7 @@ class Web(Construct):
             sort_key=ddb.Attribute(name="sk", type=ddb.AttributeType.STRING),
             time_to_live_attribute="ttl",
         )
-        table.grant_read_write_data(lambda_role)
+        self.table.grant_read_write_data(lambda_role)
         function = lam.Function(
             self,
             "resume_fn",
@@ -73,7 +76,7 @@ class Web(Construct):
             tracing=lam.Tracing.ACTIVE if tracing else lam.Tracing.DISABLED,
             environment={
                 "logging_level": logging_level,
-                "ddb_table_name": table.table_name,
+                "ddb_table_name": self.table.table_name,
             },
             memory_size=512,
         )
@@ -101,6 +104,7 @@ class Web(Construct):
                     ),
                 ),
                 cache_policy=cache_policy,
+                origin_request_policy=origin_policy,
             ),
             additional_behaviors={
                 "/ui/*": cloudfront.BehaviorOptions(
@@ -112,6 +116,7 @@ class Web(Construct):
                         ),
                     ),
                     cache_policy=cache_policy,
+                    origin_request_policy=origin_policy,
                 )
             },
         )
@@ -127,5 +132,6 @@ class Web(Construct):
             "source_deploy",
             destination_bucket=cast(s3.IBucket, bucket),
             sources=[s3_deploy.Source.asset("./src")],
+            prune=False,
         )
         CfnOutput(self, "cf_domain", value=distribution.domain_name)

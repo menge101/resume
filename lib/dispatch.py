@@ -1,11 +1,13 @@
+from abc import abstractmethod
 from aws_xray_sdk.core import xray_recorder
-from typing import Callable, Optional
+from types import ModuleType
+from typing import cast, Optional, Protocol
 import lens
 import logging
 import os
 
 
-from lib import return_
+from lib import return_, session
 
 
 logging_level = os.environ.get("logging_level", "DEBUG").upper()
@@ -13,30 +15,21 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging_level)
 
 
-@xray_recorder.capture("## Dispatching request to element handler")
-def dispatch(
-    event: dict[str, Optional[str]],
-    *,
-    data_table_name: str,
-    elements: dict[str, Callable[..., return_.Returnable]],
-    expected_prefix: Optional[str] = None,
-    session_data: dict[str, Optional[str]],
-) -> return_.Returnable:
-    try:
-        dispatch_info = DispatchInfo(event, expected_prefix)
-    except ValueError as ve:
-        return return_.error(ve, 400)
+class Dispatchable(Protocol):
+    @abstractmethod
+    def act(
+        self,
+        data_table_name: str,
+        session_data: session.SessionData,
+        query_params: dict[str, str],
+    ) -> tuple[session.SessionData, list[str]]:
+        raise NotImplementedError  # pragma: no cover
 
-    if dispatch_info.method != "GET":
-        return return_.error(
-            ValueError(f"Method {dispatch_info.method} is not supported"), 405
-        )
-    try:
-        return elements[dispatch_info.path](data_table_name, session_data)
-    except KeyError as ke:
-        logger.exception(ke)
-        logger.error("Invalid element requested")
-        return return_.error(ValueError("Not found"), 404)
+    @abstractmethod
+    def build(
+        self, data_table_name: str, session_data: session.SessionData
+    ) -> return_.Returnable:
+        raise NotImplementedError  # pragma: no cover
 
 
 class DispatchInfo:
@@ -55,7 +48,13 @@ class DispatchInfo:
         self.request_id: str = lens.focus(
             event, ["requestContext", "requestId"], default_result=False
         )
-        self.query_string = lens.focus(event, ["rawQueryString"], default_result=False)
+        self.query_params = lens.focus(
+            event, ["queryStringParameters"], default_result=dict()
+        )
+        try:
+            self.session_id: Optional[str] = session.get_session_id_from_cookies(event)
+        except KeyError:
+            self.session_id = None
         self.validate()
 
     @staticmethod
@@ -76,8 +75,70 @@ class DispatchInfo:
             errors.append("Path field not found")
         if self.request_id is False:
             errors.append("RequestId field not found")
-        if self.query_string is False:
-            errors.append("QueryStringParameters field not found")
         if errors:
             raise ValueError(", ".join(errors))
         return
+
+
+class Dispatcher:
+    def __init__(
+        self,
+        data_table_name: str,
+        elements: dict[str, Dispatchable],
+        prefix: Optional[str] = None,
+    ):
+        self.data_table_name: str = data_table_name
+        self.elements: dict[str, Dispatchable] = elements
+        self.prefix: Optional[str] = prefix
+        self.session_data: session.SessionData = session.SessionData({})
+        self.valid_element: Optional[ModuleType] = None
+
+    @xray_recorder.capture("## Triggered events being added to response")
+    @staticmethod
+    def add_triggered_events_to_response(
+        response: return_.Returnable, triggered_events: list[str]
+    ) -> return_.Returnable:
+        if not triggered_events:
+            return response
+        existing_triggered_events: str = lens.focus(
+            response, ["headers", "HX-Trigger"], default_result=""
+        )
+        triggered_events.extend(
+            map(lambda x: x.strip(), existing_triggered_events.split(","))
+        )
+        headers: dict = cast(dict, response["headers"])
+        headers["HX-Trigger"] = ", ".join(triggered_events)
+        return response
+
+    @xray_recorder.capture("## Initializing dispatch")
+    def dispatch(self, event: dict) -> return_.Returnable:
+        try:
+            info = DispatchInfo(event, self.prefix)
+        except ValueError as ve:
+            return return_.error(ve, 400)
+        try:
+            dispatchee = self.validate(info)
+        except KeyError as ke:
+            logger.exception(ke)
+            logger.error("Unsupported element requested")
+            return return_.error(ke, 404)
+        except ValueError as ve:
+            return return_.error(ve, 405)
+        session_data = session.handle_session(event, self.data_table_name)
+        try:
+            session_data, triggered_events = dispatchee.act(
+                self.data_table_name, session_data, info.query_params
+            )
+        except ValueError as ve:
+            return return_.error(ve, 500)
+        built = dispatchee.build(self.data_table_name, session_data)
+        return self.add_triggered_events_to_response(built, triggered_events)
+
+    @xray_recorder.capture("## Validating request")
+    def validate(self, info: DispatchInfo) -> Dispatchable:
+        ALLOWED_METHODS = ["GET", "POST"]
+        if info.method not in ALLOWED_METHODS:
+            raise ValueError(
+                f"Method {info.method} is not supported, must be one of {' ,'.join(ALLOWED_METHODS)}"
+            )
+        return self.elements[info.path]
