@@ -1,6 +1,5 @@
 from aws_xray_sdk.core import xray_recorder
-from basilico import htmx
-from basilico.attributes import Class, ID
+from basilico.attributes import Class
 from basilico.elements import Div, Element, Li, Raw, Span, Text, Ul
 from lib import return_
 from typing import Optional
@@ -76,10 +75,7 @@ class Experience:
 @xray_recorder.capture("## Applying template to data")
 def apply_template(heading: str, data: list[Experience]) -> str:
     template = Div(
-        ID("experience"),
         Class("experience"),
-        htmx.Get("/ui/experience"),
-        htmx.Swap("outerHTML"),
         Span(Class("heading"), Text(heading)),
         *(job.render() for job in data),
     )
