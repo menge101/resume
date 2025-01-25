@@ -2,7 +2,7 @@ from aws_xray_sdk.core import xray_recorder
 from basilico import htmx
 from basilico.attributes import Class
 from basilico.elements import Div, Element, Li, Span, Text, Ul
-from lib import return_
+from lib import return_, session
 from typing import Optional
 import boto3
 import lens
@@ -35,12 +35,13 @@ class Education:
     def render(self) -> Element:
         ach_list = [self.achievements[idx] for idx in range(len(self.achievements))]
         template = Ul(
+            Class("no-bullets"),
             Li(
                 Span(Class("name"), Text(self.name)),
             ),
             Li(
                 Ul(
-                    Class("achievements"),
+                    Class("achievements no-bullets"),
                     *(Li(Text(t)) for t in ach_list),
                 )
             ),
@@ -48,12 +49,20 @@ class Education:
         return template
 
 
+@xray_recorder.capture("## Education act function")
+def act(
+    _data_table_name: str, session_data: session.SessionData, _params: dict[str, str]
+) -> tuple[session.SessionData, list[str]]:
+    return session_data, []
+
+
 @xray_recorder.capture("## Applying education template")
 def apply_template(heading: str, data: list[Education]) -> str:
     template = Div(
         htmx.Get("/ui/education"),
         htmx.Swap("outerHTML"),
-        Class("education"),
+        htmx.Trigger("language-updated from:body"),
+        Class("education no-bullets"),
         Span(Class("heading"), Text(heading)),
         *(school.render() for school in data),
     )
@@ -62,7 +71,7 @@ def apply_template(heading: str, data: list[Education]) -> str:
 
 @xray_recorder.capture("## Building education body")
 def build(
-    table_name: str, session_data: dict[str, str], **_kwargs
+    table_name: str, session_data: dict[str, str], *_args, **_kwargs
 ) -> return_.Returnable:
     logger.debug("Starting education build")
     ddb_client = boto3.client("dynamodb")

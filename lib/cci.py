@@ -2,7 +2,7 @@ from aws_xray_sdk.core import xray_recorder
 from basilico import htmx
 from basilico.attributes import Class
 from basilico.elements import Div, Element, Li, Raw, Span, Text, Ul
-from lib import return_
+from lib import return_, session
 from typing import Optional
 import boto3
 import lens
@@ -50,8 +50,9 @@ class Cci:
 
     def render(self) -> Element:
         if self.simple():
-            return Ul(Li(Span(Class("name"), Text(self.name))))
+            return Ul(Class("no-bullets"), Li(Span(Class("name"), Text(self.name))))
         return Ul(
+            Class("no-bullets"),
             Li(
                 Span(Class("name"), Text(self.name)),
                 Raw("&nbsp;&nbsp;&#183;&nbsp;&nbsp;"),
@@ -75,12 +76,20 @@ class Cci:
         )
 
 
+@xray_recorder.capture("## CCI act function")
+def act(
+    _data_table_name: str, session_data: session.SessionData, _params: dict[str, str]
+) -> tuple[session.SessionData, list[str]]:
+    return session_data, []
+
+
 @xray_recorder.capture("## Applying cci template")
 def apply_template(data: list[Element], heading: str) -> str:
     template = Div(
         Class("cci"),
         htmx.Get("/ui/cci"),
         htmx.Swap("outerHTML"),
+        htmx.Trigger("language-updated from:body"),
         Span(Class("heading"), Text(heading)),
         *(datum for datum in data),
     )
@@ -94,11 +103,11 @@ def apply_template(data: list[Element], heading: str) -> str:
 
 @xray_recorder.capture("## Building cci body")
 def build(
-    table_name: str, session_data: dict[str, str], **_kwargs
+    table_name: str, session_data: dict[str, str], *_args, **_kwargs
 ) -> return_.Returnable:
     logger.debug("Starting cci build")
     ddb_client = boto3.client("dynamodb")
-    localization: str = session_data["local"]
+    localization: str = session_data.get("local", "en")
     heading: str = get_heading(ddb_client, localization, table_name)
     data: list[Element] = get_data(ddb_client, localization, table_name)
     return return_.http(

@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, UTC
-from typing import Optional
+from typing import Literal, Optional
 
 
 class Cookie:
@@ -17,7 +17,7 @@ class Cookie:
         partitioned: bool = False,
         path: Optional[str] = None,
         secure: bool = False,
-        same_site: Optional[str] = None,
+        same_site: Optional[Literal["Lax", "None", "Strict"]] = None,
     ) -> None:
         self.name = name
         self.value = value

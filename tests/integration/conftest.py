@@ -8,6 +8,11 @@ def client():
 
 
 @fixture
+def client_s3():
+    return boto3.client("s3")
+
+
+@fixture
 def resource():
     return boto3.resource("dynamodb")
 
@@ -24,7 +29,7 @@ def table(client, table_name):
     waiter = client.get_waiter("table_exists")
     waiter.wait(TableName=table_name, WaiterConfig={"Delay": 10, "MaxAttempts": 10})
     yield table_name
-    client.delete_table(TableName=table_name)
+    # client.delete_table(TableName=table_name)
 
 
 def _create_table(client, table_name):

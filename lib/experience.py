@@ -1,7 +1,8 @@
 from aws_xray_sdk.core import xray_recorder
+from basilico import htmx
 from basilico.attributes import Class
 from basilico.elements import Div, Element, Li, Raw, Span, Text, Ul
-from lib import return_
+from lib import return_, session
 from typing import Optional
 import boto3
 import lens
@@ -48,7 +49,7 @@ class Experience:
     def render(self) -> Element:
         bullet_list = [self.bullets[idx] for idx in range(len(self.bullets))]
         template = Ul(
-            Class("job"),
+            Class("job no-bullets"),
             Li(
                 Span(Class("name"), Text(self.name)),
                 Span(
@@ -72,9 +73,19 @@ class Experience:
         return template
 
 
+@xray_recorder.capture("## Experience act function")
+def act(
+    _data_table_name: str, session_data: session.SessionData, _params: dict[str, str]
+) -> tuple[session.SessionData, list[str]]:
+    return session_data, []
+
+
 @xray_recorder.capture("## Applying template to data")
 def apply_template(heading: str, data: list[Experience]) -> str:
     template = Div(
+        htmx.Get("/ui/experience"),
+        htmx.Swap("outerHTML"),
+        htmx.Trigger("language-updated from:body"),
         Class("experience"),
         Span(Class("heading"), Text(heading)),
         *(job.render() for job in data),
@@ -84,11 +95,11 @@ def apply_template(heading: str, data: list[Experience]) -> str:
 
 @xray_recorder.capture("## Building experience body")
 def build(
-    table_name: str, session_data: dict[str, str], **_kwargs
+    table_name: str, session_data: dict[str, str], *_args, **_kwargs
 ) -> return_.Returnable:
     logger.debug("Starting experience build")
     ddb_client = boto3.client("dynamodb")
-    localization: str = session_data["local"]
+    localization: str = session_data.get("local", "en")
     heading: str = get_heading(ddb_client, localization, table_name)
     exp_data: list[Experience] = get_data(ddb_client, localization, table_name)
     return return_.http(body=apply_template(heading, exp_data), status_code=200)

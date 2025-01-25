@@ -1,15 +1,22 @@
-from aws_cdk import aws_cloudfront as cf, Duration, RemovalPolicy, Stack, Stage
+from aws_cdk import (
+    aws_cloudfront as cf,
+    Duration,
+    RemovalPolicy,
+    Stack,
+    Stage,
+)
 from constructs import Construct
-from infrastructure import github, web
+from infrastructure import github, translation, web
 
 
 class Development(Stage):
     def __init__(self, scope: Construct, id_: str, **kwargs):
         super().__init__(scope, id_, **kwargs)
-        Resume(
+        removal_policy = RemovalPolicy.DESTROY
+        resume = Resume(
             self,
             "webapp",
-            removal_policy=RemovalPolicy.DESTROY,
+            removal_policy=removal_policy,
             logging_level="DEBUG",
             tracing=True,
         )
@@ -22,6 +29,14 @@ class Development(Stage):
                 "arn:aws:ssm:us-east-1:779846793683:parameter"
                 "/cdk-bootstrap/hnb659fds/version"
             ),
+        )
+        translation.TranslationStack(
+            self,
+            "translation",
+            removal_policy=removal_policy,
+            logging_level="DEBUG",
+            ddb_table=resume.web.table,
+            source_keys_uri="s3://development-translation-translationsource303b34d4-rwgn7buxzupq/keys/en.txt",
         )
 
 
@@ -62,11 +77,21 @@ class Resume(Stack):
             default_ttl=Duration.seconds(1),
             max_ttl=Duration.seconds(1),
         )
-        web.Web(
+        origin_policy = cf.OriginRequestPolicy(
+            self,
+            "dev-origin-policy",
+            query_string_behavior=cf.OriginRequestQueryStringBehavior.allow_list(
+                "action"
+            ),
+            header_behavior=cf.OriginRequestHeaderBehavior.none(),
+            cookie_behavior=cf.OriginRequestCookieBehavior.all(),
+        )
+        self.web = web.Web(
             self,
             "web-application-construct",
             removal_policy=removal_policy,
             logging_level=logging_level,
             tracing=tracing,
             cache_policy=cache_policy,
+            origin_policy=origin_policy,
         )
