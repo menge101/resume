@@ -62,7 +62,7 @@ def apply_template(heading: str, data: list[Education]) -> str:
         htmx.Get("/ui/education"),
         htmx.Swap("outerHTML"),
         htmx.Trigger("language-updated from:body"),
-        Class("education no-bullets"),
+        Class("education no-bullets fade"),
         Span(Class("heading"), Text(heading)),
         *(school.render() for school in data),
     )

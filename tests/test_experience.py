@@ -95,7 +95,7 @@ def test_build_no_end(client_mock, data_response_no_end, session_data, table_nam
     observed = experience.build(table_name, session_data)
     expected = (
         '<div hx-get="/ui/experience" hx-swap="outerHTML" '
-        'hx-trigger="language-updated from:body" class="experience"><span '
+        'hx-trigger="language-updated from:body" class="experience fade"><span '
         'class="heading">yolo</span><ul class="job no-bullets"><li><span '
         'class="name">UPMC Enterprises</span><span '
         'class="dates">&nbsp;&nbsp;&#183;&nbsp;&nbsp;February 2022 - '

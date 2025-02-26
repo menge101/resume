@@ -1,0 +1,15 @@
+.fade {
+  opacity: 1;
+  transition:
+      opacity 500ms;
+}
+
+.fade.htmx-added {
+  opacity: 0;
+}
+
+.fade.htmx-request {
+    opacity: 0;
+    transition:
+        opacity 500ms;
+}

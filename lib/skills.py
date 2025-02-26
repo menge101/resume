@@ -27,7 +27,7 @@ def act(
 @xray_recorder.capture("## Applying skills template")
 def apply_template(data: list[str], heading: str) -> str:
     template = Div(
-        Class("skills"),
+        Class("skills fade"),
         htmx.Get("/ui/skills"),
         htmx.Swap("outerHTML"),
         htmx.Trigger("language-updated from:body"),

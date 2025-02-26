@@ -162,7 +162,7 @@ def test_real(client_mock, real_response, session_data, table_name):
     client_mock.return_value.query.return_value = real_response
     observed = early.build(table_name, session_data)
     expected = (
-        '<div class="early-career" hx-get="/ui/early" hx-swap="outerHTML" '
+        '<div class="early-career fade" hx-get="/ui/early" hx-swap="outerHTML" '
         'hx-trigger="language-updated from:body"><span class="heading">yolo</span><ul '
         'class="no-bullets"><li class="early-career"><span '
         'class="name">Philips/Respironics – Validation &amp; '
