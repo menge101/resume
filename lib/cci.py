@@ -86,7 +86,7 @@ def act(
 @xray_recorder.capture("## Applying cci template")
 def apply_template(data: list[Element], heading: str) -> str:
     template = Div(
-        Class("cci"),
+        Class("cci fade"),
         htmx.Get("/ui/cci"),
         htmx.Swap("outerHTML"),
         htmx.Trigger("language-updated from:body"),

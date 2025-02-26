@@ -56,7 +56,7 @@ def act(
 @xray_recorder.capture("## Applying early career template")
 def apply_template(data: list[EarlyCareer], heading: str) -> str:
     template = Div(
-        Class("early-career"),
+        Class("early-career fade"),
         htmx.Get("/ui/early"),
         htmx.Swap("outerHTML"),
         htmx.Trigger("language-updated from:body"),

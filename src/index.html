@@ -15,28 +15,28 @@
      hx-trigger="click"
      hx-params="*"
      hx-swap="outerHTML swap:100ms">
-<ul>
+    <ul>
         <li>
             EN <img src="./flags/us.svg">
         </li>
     </ul>
 </div>
-<div class="header" hx-get="/ui/header" hx-trigger="load">
+<div class="header fade" hx-get="/ui/header" hx-trigger="load">
     <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
 </div>
-<div class="skills" hx-get="/ui/skills" hx-trigger="load, session-created from:body" hx-swap="outerHTML">
+<div class="skills fade" hx-get="/ui/skills" hx-trigger="load, session-created from:body" hx-swap="outerHTML">
     <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
 </div>
-<div id="experience" class="experience" hx-get="/ui/experience" hx-trigger="load, session-created from:body" hx-swap="outerHTML">
+<div id="experience fade" class="experience" hx-get="/ui/experience" hx-trigger="load, session-created from:body" hx-swap="outerHTML">
     <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
 </div>
-<div class="cci" hx-get="/ui/cci" hx-trigger="load, session-created from:body" hx-swap="outerHTML">
+<div class="cci fade" hx-get="/ui/cci" hx-trigger="load, session-created from:body" hx-swap="outerHTML">
     <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
 </div>
-<div class="early-career" hx-get="/ui/early" hx-trigger="load, session-created from:body" hx-swap="outerHTML">
+<div class="early-career fade" hx-get="/ui/early" hx-trigger="load, session-created from:body" hx-swap="outerHTML">
     <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
 </div>
-<div class="education" hx-get="/ui/education" hx-trigger="load, session-created from:body" hx-swap="outerHTML">
+<div class="education fade" hx-get="/ui/education" hx-trigger="load, session-created from:body" hx-swap="outerHTML">
     <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
 </div>
 <div class="session" hx-get="/ui/session" hx-trigger="load"></div>
