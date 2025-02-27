@@ -163,25 +163,24 @@ def test_real(client_mock, real_response, session_data, table_name):
     observed = early.build(table_name, session_data)
     expected = (
         '<div class="early-career fade" hx-get="/ui/early" hx-swap="outerHTML" '
-        'hx-trigger="language-updated from:body"><span class="heading">yolo</span><ul '
+        'hx-trigger="language-updated from:body"><span class="bigger">yolo</span><ul '
         'class="no-bullets"><li class="early-career"><span '
         'class="name">Philips/Respironics – Validation &amp; '
-        "Verification</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span "
-        'class="title">Software Assurance '
-        'Engineer</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="dates">December '
-        '2008 - August 2008</span></li><li class="early-career"><span '
-        'class="name">Vocollect - Custom '
-        'Systems</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="title">Quality '
-        "Assurance Engineer</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span "
-        'class="dates">July 2008 - December 2008</span></li><li '
-        'class="early-career"><span class="name">Management Science '
-        'Associates</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="title">Quality '
-        "Assurance Analyst II</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span "
-        'class="dates">June 2006 - June 2006</span></li><li '
+        'Verification</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="title '
+        'bold">Software Assurance Engineer</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span '
+        'class="dates small">December 2008 - August 2008</span></li><li '
+        'class="early-career"><span class="name">Vocollect - Custom '
+        'Systems</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="title bold">Quality '
+        'Assurance Engineer</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="dates '
+        'small">July 2008 - December 2008</span></li><li class="early-career"><span '
+        'class="name">Management Science '
+        'Associates</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="title '
+        'bold">Quality Assurance Analyst II</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span '
+        'class="dates small">June 2006 - June 2006</span></li><li '
         'class="early-career"><span class="name">Entigo '
-        'Corporation</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="title">Quality '
-        "Assurance Analyst</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span "
-        'class="dates">May 2003 - June 2003</span></li></ul></div>'
+        'Corporation</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span class="title '
+        'bold">Quality Assurance Analyst</span>&nbsp;&nbsp;&#183;&nbsp;&nbsp;<span '
+        'class="dates small">May 2003 - June 2003</span></li></ul></div>'
     )
     assert observed["body"] == expected
 

@@ -81,8 +81,12 @@ def act(
     # 1) Opening the choice menu
     if params.get("action") == "open":
         session_data["translate"] = {"state": "open"}
+        events: list[str] = []
+    # 2) Initializing the language picker
+    elif params.get("action") == "init":
+        session_data["translate"] = {"state": "closed"}
         events = []
-    # 2) Choosing a language/localization
+    # 3) Choosing a language/localization
     else:
         supported_langs = language.get_supported(
             boto3.resource("dynamodb"), data_table_name
@@ -91,7 +95,9 @@ def act(
         session_data["translate"] = {"state": "closed"}
         logger.debug(f"Supported languages: {supported_langs}")
         logger.debug(f"Chosen language: {chosen_lang}")
-        session_data["local"] = chosen_lang if chosen_lang in supported_langs else "en"
+        session_data["local"] = (
+            chosen_lang.lower() if chosen_lang in supported_langs else "en"
+        )
         events = ["language-updated"]
     logger.debug(f"Translate act new session data: {session_data}")
     session.update_session(data_table_name, session_data)
@@ -100,28 +106,30 @@ def act(
 
 def apply_closed_template(language: str) -> str:
     language = language.lower()
-    flag = FLAG_MAP.get(language, f"./flags/{language}.svg")
-    txt = LANGUAGE_CODE.get(language, language.upper())
     template = Div(
         ID("language-picker"),
-        Class("language"),
+        Class("language no-padding no-margin"),
         htmx.Trigger("click"),
         htmx.Swap("outerHTML swap:100ms"),
         htmx.Get("/ui/translate?action=open"),
         htmx.Params("*"),
-        ID("language-picker"),
-        Ul(Li(Text(txt), Img(Src(flag)))),
+        Ul(Class("no-padding no-margin"), language_button(language)),
     )
     return template.string()
 
 
-def apply_open_template(data_table_name) -> str:
+def apply_open_template(current_language: str, data_table_name: str) -> str:
     languages = language.get_supported(boto3.resource("dynamodb"), data_table_name)
     languages.sort()
+    languages = [lang for lang in languages if lang != current_language]
+    languages.insert(0, current_language)
     template = Div(
         ID("language-picker"),
-        Class("language"),
-        Ul(*(language_button(lang) for lang in languages)),
+        Class("language no-padding no-margin"),
+        Ul(
+            Class("no-margin no-padding"),
+            *(language_button_with_htmx(lang) for lang in languages),
+        ),
     )
     return template.string()
 
@@ -131,11 +139,14 @@ def build(
     table_name: str, session_data: session.SessionData, *_args, **_kwargs
 ) -> return_.Returnable:
     state = lens.focus(session_data, ["translate", "state"], default_result="closed")
+    language = cast(str, session_data.get("local", "en"))
     if state == "open":
-        template = apply_open_template(table_name)
-    else:
-        language = cast(str, session_data["local"])
+        template = apply_open_template(language, table_name)
+    elif state == "closed":
         template = apply_closed_template(language)
+    else:
+        template = apply_closed_template(language)
+        logger.warning(f"Unexpected state: {state}")
     return return_.http(template, status_code=200)
 
 
@@ -151,17 +162,25 @@ def get_existing_en_data(client, table_name) -> dict[str, str]:
     }
 
 
-def language_button(language: str) -> Li:
-    language = language.lower()
-    flag = FLAG_MAP.get(language, f"./flags/{language}.svg")
-    txt = LANGUAGE_CODE.get(language, language.upper())
+def language_button(lang: str) -> Li:
+    lang = lang.lower()
+    flag = FLAG_MAP.get(lang, f"./flags/{lang}.svg")
+    txt = LANGUAGE_CODE.get(lang, lang.upper())
+    return Li(Class("lang-btn"), Text(txt), Img(Src(flag)))
+
+
+def language_button_with_htmx(lang: str) -> Li:
+    lang = lang.lower()
+    flag = FLAG_MAP.get(lang, f"./flags/{lang}.svg")
+    txt = LANGUAGE_CODE.get(lang, lang.upper())
     return Li(
         htmx.Trigger("click"),
         htmx.Swap("outerHTML swap:100ms"),
         htmx.Get("/ui/translate"),
-        htmx.Vals(f'{{"action": "{language}"}}'),
+        htmx.Vals(f'{{"action": "{lang}"}}'),
         htmx.Target("#language-picker"),
         htmx.Params("*"),
+        Class("lang-btn"),
         Text(txt),
         Img(Src(flag)),
     )

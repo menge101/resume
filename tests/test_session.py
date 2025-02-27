@@ -115,7 +115,7 @@ def test_act_with_session(boto3_mock, mocker, session_data, table_mock, table_na
     ddb_tbl_mock.return_value = mocker.Mock(name="Table()")
     observed = session.act(table_name, session_data, {})
     ddb_tbl_mock.return_value.put_item.assert_not_called()
-    assert observed == (session_data, [])
+    assert observed == (session_data, ["session-found"])
 
 
 def test_build_with_invalid_session(

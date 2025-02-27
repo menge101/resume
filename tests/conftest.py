@@ -21,7 +21,7 @@ def project_root():
 @fixture
 def session_data(session_id):
     return {
-        "local": "EN",
+        "local": "en",
         "id_": session_id,
         "sk": session_id,
         "translate": {"state": "closed"},
