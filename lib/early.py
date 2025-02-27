@@ -60,7 +60,7 @@ def apply_template(data: list[EarlyCareer], heading: str) -> str:
         htmx.Get("/ui/early"),
         htmx.Swap("outerHTML"),
         htmx.Trigger("language-updated from:body"),
-        Span(Class("heading"), Text(heading)),
+        Span(Class("bigger"), Text(heading)),
         Ul(
             Class("no-bullets"),
             *(datum.render() for datum in data),

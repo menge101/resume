@@ -90,7 +90,7 @@ def apply_template(data: list[Element], heading: str) -> str:
         htmx.Get("/ui/cci"),
         htmx.Swap("outerHTML"),
         htmx.Trigger("language-updated from:body"),
-        Span(Class("heading"), Text(heading)),
+        Span(Class("bigger"), Text(heading)),
         *(datum for datum in data),
     )
     try:

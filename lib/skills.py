@@ -31,7 +31,7 @@ def apply_template(data: list[str], heading: str) -> str:
         htmx.Get("/ui/skills"),
         htmx.Swap("outerHTML"),
         htmx.Trigger("language-updated from:body"),
-        Span(Class("heading"), Text(heading)),
+        Span(Class("bigger"), Text(heading)),
         Ul(Class("bullets"), *(Li(Text(skill)) for skill in data)),
     )
     return template.string()
