@@ -32,7 +32,7 @@ def act(
     session_id = session_data.get("id_", None)
     if session_id:
         logger.debug("session exists")
-        return session_data, []
+        return session_data, ["session-found"]
     logger.debug("session does not exist")
     session_id = str(uuid1())
     exp = cookie.expiration_time(24 * 60 * 60)

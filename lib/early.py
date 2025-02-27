@@ -35,10 +35,10 @@ class EarlyCareer:
             Class("early-career"),
             Span(Class("name"), Text(self.name)),
             Raw("&nbsp;&nbsp;&#183;&nbsp;&nbsp;"),
-            Span(Class("title"), Text(self.title)),
+            Span(Class("title bold"), Text(self.title)),
             Raw("&nbsp;&nbsp;&#183;&nbsp;&nbsp;"),
             Span(
-                Class("dates"),
+                Class("dates small"),
                 Text(
                     f"{self.start_month} {self.start_year} - {self.end_month} {self.start_year}"
                 ),

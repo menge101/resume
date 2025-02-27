@@ -28,9 +28,9 @@ def apply_template(data):
         htmx.Trigger("click"),
         htmx.Swap("outerHTML"),
         htmx.Get("/ui/header"),
-        Li(Class("name"), Text(data["name"])),
+        Li(Class("name biggest"), Text(data["name"])),
         Li(
-            Class("other"),
+            Class("other big"),
             Raw(
                 (
                     f"{data['city']}, {data['state']}  &nbsp;&nbsp;&#183;&nbsp;&nbsp;  "
