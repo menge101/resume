@@ -1,10 +1,14 @@
 @import "basic.css";
 @import "fade.css";
+@import "language.css";
 
 body {
     color: aliceblue;
     background-color: #333333;
     font-family: Calibri, Helvetica, Arial, sans-serif;
+}
+
+div.body {
     text-align: left;
     display: block;
     margin-left: 11vw;
@@ -28,51 +32,7 @@ body {
     margin-right: auto;
 }
 
-div.header li.name {
-    font-size: 2em;
-}
-
-div.header li.other {
-    font-size: 1.1em
-}
-
-div.early-career ul li span.title {
-    font-weight: bold;
-}
-
 .session {
     max-height: 0;
     visibility: hidden;
-}
-
-.early-career .dates {
-    font-size: .9em
-}
-
-.achievements {
-    padding-left: 0;
-}
-
-.language {
-    float: left;
-    position: fixed;
-    background-color: #333333;
-}
-
-.language ul {
-    padding: 0px;
-    margin: 0px;
-}
-
-.language ul li {
-    border-style: outset;
-    border-color: #494949;
-    display: flex;
-    align-content: center;
-}
-
-.language ul li img {
-    height: 1em;
-    padding-left: 3px;
-    border: white;
 }

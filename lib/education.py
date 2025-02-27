@@ -41,7 +41,7 @@ class Education:
             ),
             Li(
                 Ul(
-                    Class("achievements no-bullets"),
+                    Class("achievements no-bullets no-margin no-padding"),
                     *(Li(Text(t)) for t in ach_list),
                 )
             ),
@@ -63,7 +63,7 @@ def apply_template(heading: str, data: list[Education]) -> str:
         htmx.Swap("outerHTML"),
         htmx.Trigger("language-updated from:body"),
         Class("education no-bullets fade"),
-        Span(Class("heading"), Text(heading)),
+        Span(Class("bigger"), Text(heading)),
         *(school.render() for school in data),
     )
     return template.string()

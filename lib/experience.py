@@ -87,7 +87,7 @@ def apply_template(heading: str, data: list[Experience]) -> str:
         htmx.Swap("outerHTML"),
         htmx.Trigger("language-updated from:body"),
         Class("experience fade"),
-        Span(Class("heading"), Text(heading)),
+        Span(Class("bigger"), Text(heading)),
         *(job.render() for job in data),
     )
     return template.string()
