@@ -11,14 +11,13 @@ class GithubIdp(Construct):
         pass_role_arn: str,
         staging_bucket_arn: str,
         cdk_bootstrap_version_param_arn: str,
+        github_open_id_provider_arn: str | None = None,
     ):
         super().__init__(scope, id_)
-        ghidp = iam.OpenIdConnectProvider(
-            self,
-            "ghidp",
-            url="https://token.actions.githubusercontent.com",
-            client_ids=["sts.amazonaws.com"],
-        )
+        if not github_open_id_provider_arn:
+            open_id_provider_arn = self.create_github_open_connect_provider()
+        else:
+            open_id_provider_arn = github_open_id_provider_arn
         policy = iam.ManagedPolicy(
             self,
             "github-managed-policy",
@@ -117,9 +116,7 @@ class GithubIdp(Construct):
         role = iam.Role(
             self,
             "ghidp_role",
-            assumed_by=iam.WebIdentityPrincipal(
-                ghidp.open_id_connect_provider_arn
-            ).with_conditions(
+            assumed_by=iam.WebIdentityPrincipal(open_id_provider_arn).with_conditions(
                 {
                     "StringLike": {
                         "token.actions.githubusercontent.com:sub": ["repo:menge101/*"]
@@ -132,3 +129,12 @@ class GithubIdp(Construct):
             managed_policies=[policy],
         )
         CfnOutput(self, "role-arn", value=role.role_arn)
+
+    def create_github_open_connect_provider(self) -> str:
+        ghidp = iam.OpenIdConnectProvider(
+            self,
+            "ghidp",
+            url="https://token.actions.githubusercontent.com",
+            client_ids=["sts.amazonaws.com"],
+        )
+        return ghidp.open_id_connect_provider_arn

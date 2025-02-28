@@ -16,8 +16,12 @@ def data_path(project_root):
 
 @fixture
 def table_name():
-    return "development-webapp-webapplicationconstructdata33DBB228-16XPAZHN9WXP4"
+    return "development-webapp-webapplicationconstructdata33DBB228-10IEC4B2866XC"
 
 
 def test_ddb_load(context, data_path, table_name):
     assert tasks.load_ddb_table(context, table_name, data_path)
+
+
+def test_ddb_read(context, table_name):
+    assert tasks.read_ddb_table(context, table_name, "testing.csv")
