@@ -1,9 +1,11 @@
 from aws_cdk import (
+    aws_certificatemanager as acm,
     aws_cloudfront as cloudfront,
     aws_cloudfront_origins as cf_origins,
     aws_dynamodb as ddb,
     aws_iam as iam,
     aws_lambda as lam,
+    aws_route53 as r53,
     aws_s3 as s3,
     aws_s3_deployment as s3_deploy,
     Aws,
@@ -30,6 +32,7 @@ class Web(Construct):
             cloudfront.OriginRequestPolicy
         ] = cloudfront.OriginRequestPolicy.ALL_VIEWER,
         function_environment_variables: Optional[dict[str, str]] = None,
+        domain_name: str | None = None,
     ) -> None:
         logging_level = logging_level.upper() if logging_level else "DEBUG"
         super().__init__(scope, id_)
@@ -92,7 +95,13 @@ class Web(Construct):
             "s3-origin-access-control",
             signing=cast(cloudfront.Signing, cloudfront.Signing.SIGV4_ALWAYS),
         )
-        distribution = cloudfront.Distribution(
+        certificate = (
+            self.create_certificate(domain_name=domain_name) if domain_name else None
+        )
+        domain_names: list[str] | None = (
+            [cast(str, domain_name)] if domain_name else None
+        )
+        self.distribution = cloudfront.Distribution(
             self,
             "distribution",
             default_root_object="index.html",
@@ -106,6 +115,7 @@ class Web(Construct):
                 ),
                 cache_policy=cache_policy,
                 origin_request_policy=origin_policy,
+                viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
             ),
             additional_behaviors={
                 "/ui/*": cloudfront.BehaviorOptions(
@@ -118,15 +128,18 @@ class Web(Construct):
                     ),
                     cache_policy=cache_policy,
                     origin_request_policy=origin_policy,
+                    viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                 )
             },
+            domain_names=domain_names,
+            certificate=certificate,
         )
         function.add_permission(
             "cloudfront_permission",
             principal=iam.ServicePrincipal("cloudfront.amazonaws.com"),
             action="lambda:InvokeFunctionUrl",
             function_url_auth_type=lam.FunctionUrlAuthType.AWS_IAM,
-            source_arn=f"arn:aws:cloudfront::{Aws.ACCOUNT_ID}:distribution/{distribution.distribution_id}",
+            source_arn=f"arn:aws:cloudfront::{Aws.ACCOUNT_ID}:distribution/{self.distribution.distribution_id}",
         )
         s3_deploy.BucketDeployment(
             self,
@@ -135,4 +148,15 @@ class Web(Construct):
             sources=[s3_deploy.Source.asset("./src")],
             prune=False,
         )
-        CfnOutput(self, "cf_domain", value=distribution.domain_name)
+        CfnOutput(self, "cf_domain", value=self.distribution.domain_name)
+
+    def create_certificate(self, domain_name: str) -> acm.Certificate:
+        hosted_zone = r53.HostedZone.from_lookup(
+            self, "hosted-zone", domain_name=domain_name
+        )
+        return acm.Certificate(
+            self,
+            "cert",
+            domain_name=domain_name,
+            validation=acm.CertificateValidation.from_dns(hosted_zone),
+        )

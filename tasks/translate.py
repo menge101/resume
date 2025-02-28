@@ -1,5 +1,5 @@
 from invoke import Collection, task, Task
-from lib import translate
+from lib import language, translate
 from typing import cast
 import boto3
 
@@ -7,8 +7,15 @@ import boto3
 @task
 def add_supported_language(_ctx, string_table, language_code):
     ddb_rsrc = boto3.resource("dynamodb")
-    translate.add_supported_language(ddb_rsrc, string_table, language_code)
+    language.add_supported(ddb_rsrc, string_table, language_code)
     print(f"Added {language_code} to supported languages in {string_table}")
+
+
+@task
+def remove_supported_language(_ctx, string_table, language_code):
+    ddb_rsrc = boto3.resource("dynamodb")
+    language.remove_supported(ddb_rsrc, string_table, language_code)
+    print(f"Removed {language_code} from supported languages in {string_table}")
 
 
 @task
@@ -43,3 +50,4 @@ translate_collection = Collection("translate")
 translate_collection.add_task(cast(Task, upload_en_strings_to_bucket))
 translate_collection.add_task(cast(Task, start_job))
 translate_collection.add_task(cast(Task, add_supported_language))
+translate_collection.add_task(cast(Task, remove_supported_language))

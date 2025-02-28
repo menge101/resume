@@ -21,6 +21,17 @@ def add_supported(resource, table_name: str, language_code: str) -> bool:
     return True
 
 
+def remove_supported(resource, table_name: str, language_code: str) -> bool:
+    languages: list[str] = get_supported(resource, table_name)
+    language_code = language_code.lower()
+    if language_code not in languages:
+        return True
+    languages = [language for language in languages if language != language_code]
+    tbl = resource.Table(table_name)
+    tbl.put_item(Item={"pk": "languages", "sk": "none", "languages": languages})
+    return True
+
+
 def determine_unsupported(
     ddb_rsrc, table_name: str, s3_client, bucket_name: str
 ) -> list[tuple[str, str]]:

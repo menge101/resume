@@ -27,6 +27,22 @@ def test_add_supported_language(resource_mock, table_name):
     resource_mock.Table.return_value.put_item.assert_called()
 
 
+def test_remove_supported(resource_mock, table_name):
+    resource_mock.Table.return_value.get_item.return_value = {
+        "Item": {"languages": ["aa", "bb", "yo"]}
+    }
+    assert language.remove_supported(resource_mock, table_name, "yo")
+    resource_mock.Table.return_value.put_item.assert_called()
+
+
+def test_remove_supported_already_removed(resource_mock, table_name):
+    resource_mock.Table.return_value.get_item.return_value = {
+        "Item": {"languages": ["aa", "bb", "yo"]}
+    }
+    assert language.remove_supported(resource_mock, table_name, "lo")
+    resource_mock.Table.return_value.put_item.assert_not_called()
+
+
 def test_add_supported_language_already_supported(resource_mock, table_name):
     resource_mock.Table.return_value.get_item.return_value = {
         "Item": {"languages": ["yo"]}

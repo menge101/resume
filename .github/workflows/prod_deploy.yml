@@ -5,10 +5,10 @@ name: Connect to an AWS role from a GitHub repository
 on:
   push:
     tags:
-      - dev
+      - prd
 env:
   AWS_REGION : "us-east-1"
-  ROLE : "arn:aws:iam::779846793683:role/development-github-connec-githubidpghidproleAF42990-lD5MLGDPNfK3"
+  ROLE : "arn:aws:iam::473626866269:role/production-github-connect-githubidpghidproleAF42990-krUJg6DRVhwF"
 
 # Permission can be added at job level or workflow level
 permissions:
@@ -93,4 +93,4 @@ jobs:
       - name: Deploy
         run: |
           pwd
-          cdk deploy development/** --app="python3 ${PWD}/app.py" --require-approval=never
+          cdk deploy production/** --app="python3 ${PWD}/app.py" --require-approval=never
