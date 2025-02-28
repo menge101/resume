@@ -8,6 +8,11 @@
     <title>Resume</title>
 </head>
 <body>
+<div hx-get="/ui/banner"
+     hx-trigger="load"
+     hx-swap="outerHTML"
+     class="invisible">
+</div>
 <div id="language-picker"
      class="language no-padding no-margin"
      hx-get="/ui/translate"
@@ -41,7 +46,7 @@
     <div class="education fade" hx-get="/ui/education" hx-trigger="load, session-created from:body" hx-swap="outerHTML">
         <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
     </div>
-    <div class="session" hx-get="/ui/session" hx-trigger="load"></div>
+    <div class="invisible" hx-get="/ui/session" hx-trigger="load"></div>
 </div>
 </body>
 </html>

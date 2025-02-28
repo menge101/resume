@@ -29,9 +29,11 @@ class Web(Construct):
         origin_policy: Optional[
             cloudfront.OriginRequestPolicy
         ] = cloudfront.OriginRequestPolicy.ALL_VIEWER,
+        function_environment_variables: Optional[dict[str, str]] = None,
     ) -> None:
         logging_level = logging_level.upper() if logging_level else "DEBUG"
         super().__init__(scope, id_)
+        function_environment_variables = function_environment_variables or {}
         lambda_policy = iam.ManagedPolicy(
             self,
             "lambda_policy",
@@ -66,6 +68,8 @@ class Web(Construct):
             time_to_live_attribute="ttl",
         )
         self.table.grant_read_write_data(lambda_role)
+        function_environment_variables["logging_level"] = logging_level
+        function_environment_variables["ddb_table_name"] = self.table.table_name
         function = lam.Function(
             self,
             "resume_fn",
@@ -74,10 +78,7 @@ class Web(Construct):
             runtime=cast(lam.Runtime, lam.Runtime.PYTHON_3_13),
             role=lambda_role,
             tracing=lam.Tracing.ACTIVE if tracing else lam.Tracing.DISABLED,
-            environment={
-                "logging_level": logging_level,
-                "ddb_table_name": self.table.table_name,
-            },
+            environment=function_environment_variables,
             memory_size=512,
         )
         fn_url = function.add_function_url(auth_type=lam.FunctionUrlAuthType.AWS_IAM)

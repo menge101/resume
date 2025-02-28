@@ -16,6 +16,13 @@ div.body {
     line-height: 1.2em;
 }
 
+.banner {
+    background-color: yellow;
+    color: black;
+    text-align: center;
+    padding: 4px;
+}
+
 .header {
     text-align: center;
     display: block;
@@ -30,9 +37,4 @@ div.body {
     display: block;
     margin-left: auto;
     margin-right: auto;
-}
-
-.session {
-    max-height: 0;
-    visibility: hidden;
 }

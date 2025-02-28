@@ -7,6 +7,7 @@ from aws_cdk import (
 )
 from constructs import Construct
 from infrastructure import github, translation, web
+from typing import Optional
 
 
 class Development(Stage):
@@ -19,6 +20,7 @@ class Development(Stage):
             removal_policy=removal_policy,
             logging_level="DEBUG",
             tracing=True,
+            function_environment_variables={"environment_name": "dev"},
         )
         GitHubIamConnection(
             self,
@@ -67,6 +69,7 @@ class Resume(Stack):
         removal_policy: RemovalPolicy,
         logging_level: str,
         tracing: bool,
+        function_environment_variables: Optional[dict[str, str]] = None,
         **kwargs,
     ) -> None:
         super().__init__(scope, id_, **kwargs)
@@ -94,4 +97,5 @@ class Resume(Stack):
             tracing=tracing,
             cache_policy=cache_policy,
             origin_policy=origin_policy,
+            function_environment_variables=function_environment_variables,
         )

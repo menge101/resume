@@ -7,6 +7,7 @@ import sys
 
 
 from lib import (
+    banner,
     cci,
     dispatch,
     early,
@@ -54,6 +55,7 @@ def handler(event: dict, context):
             "/cci": cast(dispatch.Dispatchable, cci),
             "/session": cast(dispatch.Dispatchable, session),
             "/translate": cast(dispatch.Dispatchable, translate),
+            "/banner": cast(dispatch.Dispatchable, banner),
         },
         prefix="/ui",
     )
