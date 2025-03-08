@@ -108,12 +108,12 @@ def apply_closed_template(language: str) -> str:
     language = language.lower()
     template = Div(
         ID("language-picker"),
-        Class("language no-padding no-margin"),
+        Class("left-side no-padding no-margin"),
         htmx.Trigger("click"),
         htmx.Swap("outerHTML swap:100ms"),
         htmx.Get("/ui/translate?action=open"),
         htmx.Params("*"),
-        Ul(Class("no-padding no-margin"), language_button(language)),
+        Ul(Class("no-padding no-margin no-bullets"), language_button(language)),
     )
     return template.string()
 
@@ -125,9 +125,9 @@ def apply_open_template(current_language: str, data_table_name: str) -> str:
     languages.insert(0, current_language)
     template = Div(
         ID("language-picker"),
-        Class("language no-padding no-margin"),
+        Class("left-side no-padding no-margin"),
         Ul(
-            Class("no-margin no-padding"),
+            Class("no-margin no-padding no-bullets"),
             *(language_button_with_htmx(lang) for lang in languages),
         ),
     )
@@ -166,7 +166,7 @@ def language_button(lang: str) -> Li:
     lang = lang.lower()
     flag = FLAG_MAP.get(lang, f"./flags/{lang}.svg")
     txt = LANGUAGE_CODE.get(lang, lang.upper())
-    return Li(Class("lang-btn"), Text(txt), Img(Src(flag)))
+    return Li(Class("is-a-button"), Text(txt), Img(Class("flag-img"), Src(flag)))
 
 
 def language_button_with_htmx(lang: str) -> Li:
@@ -180,9 +180,9 @@ def language_button_with_htmx(lang: str) -> Li:
         htmx.Vals(f'{{"action": "{lang}"}}'),
         htmx.Target("#language-picker"),
         htmx.Params("*"),
-        Class("lang-btn"),
+        Class("is-a-button"),
         Text(txt),
-        Img(Src(flag)),
+        Img(Class("flag-img"), Src(flag)),
     )
 
 

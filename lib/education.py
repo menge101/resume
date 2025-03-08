@@ -35,7 +35,7 @@ class Education:
     def render(self) -> Element:
         ach_list = [self.achievements[idx] for idx in range(len(self.achievements))]
         template = Ul(
-            Class("no-bullets"),
+            Class("no-bullets no-break-print"),
             Li(
                 Span(Class("name"), Text(self.name)),
             ),

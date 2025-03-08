@@ -32,7 +32,7 @@ class EarlyCareer:
 
     def render(self) -> Element:
         return Li(
-            Class("early-career"),
+            Class("early-career no-break-print"),
             Span(Class("name"), Text(self.name)),
             Raw("&nbsp;&nbsp;&#183;&nbsp;&nbsp;"),
             Span(Class("title bold"), Text(self.title)),
