@@ -49,7 +49,7 @@ class Experience:
     def render(self) -> Element:
         bullet_list = [self.bullets[idx] for idx in range(len(self.bullets))]
         template = Ul(
-            Class("job no-bullets"),
+            Class("job no-bullets no-break-print"),
             Li(
                 Span(Class("name"), Text(self.name)),
                 Span(

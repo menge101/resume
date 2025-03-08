@@ -1,6 +1,6 @@
 @import "basic.css";
 @import "fade.css";
-@import "language.css";
+@import "print.css";
 
 body {
     color: aliceblue;
@@ -11,9 +11,14 @@ body {
 div.body {
     text-align: left;
     display: block;
-    margin-left: 11vw;
-    margin-right: 11vw;
-    line-height: 1.2em;
+}
+
+@media not print {
+    div.body {
+        margin-left: 11vw;
+        margin-right: 11vw;
+        line-height: 1.2em;
+    }
 }
 
 .banner {
@@ -37,4 +42,9 @@ div.body {
     display: block;
     margin-left: auto;
     margin-right: auto;
+}
+
+.flag-img {
+    height: 1em;
+    padding-left: 3px;
 }

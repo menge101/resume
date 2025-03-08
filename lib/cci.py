@@ -50,9 +50,12 @@ class Cci:
 
     def render(self) -> Element:
         if self.simple():
-            return Ul(Class("no-bullets"), Li(Span(Class("name"), Text(self.name))))
+            return Ul(
+                Class("no-bullets no-break-print"),
+                Li(Span(Class("name"), Text(self.name))),
+            )
         return Ul(
-            Class("no-bullets"),
+            Class("no-bullets no-break-print"),
             Li(
                 Span(Class("name"), Text(self.name)),
                 Raw("&nbsp;&nbsp;&#183;&nbsp;&nbsp;"),

@@ -1,0 +1,38 @@
+@media print {
+    .no-print {
+        display: none;
+        height: 0;
+    }
+
+    .no-break-print {
+        break-inside: avoid;
+    }
+
+    .biggest {
+        font-size: 1.8em;
+    }
+
+    .bigger {
+        font-size: 1.1em;
+    }
+
+    .big {
+        font-size: 0.9em;
+    }
+
+    .standard-size {
+        font-size: 0.8em;
+    }
+
+    .small {
+        font-size: 0.7em;
+    }
+
+    div.body {
+        text-align: left;
+        display: block;
+        margin-left: 2vw;
+        margin-right: 2vw;
+        line-height: 1.1em;
+    }
+}

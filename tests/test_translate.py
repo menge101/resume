@@ -99,10 +99,11 @@ def test_build_unexpected_state(mocker, session_data, table_name):
     logger_mock = mocker.patch("lib.translate.logger")
     session_data["translate"]["state"] = "unexpected"
     expected = {
-        "body": '<div id="language-picker" class="language no-padding no-margin" '
+        "body": '<div id="language-picker" class="left-side no-padding no-margin" '
         'hx-trigger="click" hx-swap="outerHTML swap:100ms" '
         'hx-get="/ui/translate?action=open" hx-params="*"><ul '
-        'class="no-padding no-margin"><li class="lang-btn">EN<img '
+        'class="no-padding no-margin no-bullets"><li '
+        'class="is-a-button">EN<img class="flag-img" '
         'src="./flags/us.svg"></li></ul></div>',
         "cookies": [],
         "headers": {"Content-Type": "text/html"},
@@ -120,23 +121,25 @@ def test_build_open(resource_mock, session_data, table_name):
         "Item": {"languages": ["en", "ne", "fr", "xx"]}
     }
     expected = {
-        "body": '<div id="language-picker" class="language no-padding no-margin"><ul '
-        'class="no-margin no-padding"><li hx-trigger="click" '
+        "body": '<div id="language-picker" class="left-side no-padding no-margin"><ul '
+        'class="no-margin no-padding no-bullets"><li hx-trigger="click" '
         'hx-swap="outerHTML swap:100ms" hx-get="/ui/translate" '
         'hx-vals="{&quot;action&quot;: &quot;en&quot;}" '
-        'hx-target="#language-picker" hx-params="*" class="lang-btn">EN<img '
+        'hx-target="#language-picker" hx-params="*" '
+        'class="is-a-button">EN<img class="flag-img" '
         'src="./flags/us.svg"></li><li hx-trigger="click" hx-swap="outerHTML '
         'swap:100ms" hx-get="/ui/translate" hx-vals="{&quot;action&quot;: '
         '&quot;fr&quot;}" hx-target="#language-picker" hx-params="*" '
-        'class="lang-btn">FR<img src="./flags/fr.svg"></li><li '
-        'hx-trigger="click" hx-swap="outerHTML swap:100ms" '
-        'hx-get="/ui/translate" hx-vals="{&quot;action&quot;: '
+        'class="is-a-button">FR<img class="flag-img" '
+        'src="./flags/fr.svg"></li><li hx-trigger="click" hx-swap="outerHTML '
+        'swap:100ms" hx-get="/ui/translate" hx-vals="{&quot;action&quot;: '
         '&quot;ne&quot;}" hx-target="#language-picker" hx-params="*" '
-        'class="lang-btn">NE<img src="./flags/ne.svg"></li><li '
-        'hx-trigger="click" hx-swap="outerHTML swap:100ms" '
-        'hx-get="/ui/translate" hx-vals="{&quot;action&quot;: '
+        'class="is-a-button">NE<img class="flag-img" '
+        'src="./flags/ne.svg"></li><li hx-trigger="click" hx-swap="outerHTML '
+        'swap:100ms" hx-get="/ui/translate" hx-vals="{&quot;action&quot;: '
         '&quot;xx&quot;}" hx-target="#language-picker" hx-params="*" '
-        'class="lang-btn">XX<img src="./flags/xx.svg"></li></ul></div>',
+        'class="is-a-button">XX<img class="flag-img" '
+        'src="./flags/xx.svg"></li></ul></div>',
         "cookies": [],
         "headers": {"Content-Type": "text/html"},
         "isBase64Encoded": False,
@@ -148,10 +151,11 @@ def test_build_open(resource_mock, session_data, table_name):
 
 def test_build_closed(session_data, table_name):
     expected = {
-        "body": '<div id="language-picker" class="language no-padding no-margin" '
+        "body": '<div id="language-picker" class="left-side no-padding no-margin" '
         'hx-trigger="click" hx-swap="outerHTML swap:100ms" '
         'hx-get="/ui/translate?action=open" hx-params="*"><ul '
-        'class="no-padding no-margin"><li class="lang-btn">EN<img '
+        'class="no-padding no-margin no-bullets"><li '
+        'class="is-a-button">EN<img class="flag-img" '
         'src="./flags/us.svg"></li></ul></div>',
         "cookies": [],
         "headers": {"Content-Type": "text/html"},

@@ -96,8 +96,8 @@ def test_build_no_end(client_mock, data_response_no_end, session_data, table_nam
     expected = (
         '<div hx-get="/ui/experience" hx-swap="outerHTML" '
         'hx-trigger="language-updated from:body" class="experience fade"><span '
-        'class="bigger">yolo</span><ul class="job no-bullets"><li><span '
-        'class="name">UPMC Enterprises</span><span '
+        'class="bigger">yolo</span><ul class="job no-bullets '
+        'no-break-print"><li><span class="name">UPMC Enterprises</span><span '
         'class="dates">&nbsp;&nbsp;&#183;&nbsp;&nbsp;February 2022 - '
         'Present</span></li><li class="title-and-loc">Senior Cloud Infrastructure '
         "Engineer&nbsp;&nbsp;&#183;&nbsp;&nbsp;Pittsburgh, PA</li><li><ul "

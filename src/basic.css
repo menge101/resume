@@ -10,6 +10,10 @@
     font-size: 1.1em;
 }
 
+.standard-size {
+    font-size: 1.0em;
+}
+
 .small {
     font-size: .9em;
 }
@@ -37,4 +41,30 @@
 .invisible {
     max-height: 0;
     visibility: hidden;
+}
+
+.left-side {
+    float: left;
+    margin-left: 6vw;
+    margin-top: 2vw;
+}
+
+.right-side {
+    float: right;
+    margin-right: 6vw;
+    margin-top: 2vw;
+}
+
+.is-a-button {
+    border-style: outset;
+    border-color: #494949;
+    align-content: center;
+    background-color: #3F3F3F;
+    display: flex;
+    z-index: 10;
+}
+
+.whole-fixed {
+    width: 100%;
+    position: fixed;
 }

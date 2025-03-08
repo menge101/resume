@@ -13,20 +13,23 @@
      hx-swap="outerHTML"
      class="invisible">
 </div>
-<div id="language-picker"
-     class="language no-padding no-margin"
+<div class="whole-fixed no-print">
+    <div id="language-picker"
+     class="left-side no-padding no-margin"
      hx-get="/ui/translate"
      hx-vals='{"action": "init"}'
      hx-trigger="session-created from:body, session-found from:body"
      hx-params="*"
      hx-swap="outerHTML swap:100ms">
-    <ul class="no-padding no-margin">
-        <li class="lang-btn">
-            EN <img src="./flags/us.svg">
+    <ul class="no-padding no-margin no-bullets">
+        <li class="is-a-button">
+            EN <img class="flag-img" alt="USA flag icon" src="./flags/us.svg">
         </li>
     </ul>
 </div>
-<div class="body">
+<div class="right-side is-a-button" onclick="print()">Print/Download</div>
+</div>
+<div class="body standard-size">
     <div class="header fade" hx-get="/ui/header" hx-trigger="load">
         <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
     </div>
