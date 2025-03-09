@@ -17,6 +17,7 @@ logger.setLevel(logging_level)
 SessionData = NewType("SessionData", dict[str, dict[str, str] | str])
 
 
+# Important, the key "id_" SHOULD NOT BE SET in these defaults, "id_" only gets set by code downstream from here
 DEFAULT_SESSION_VALUES: SessionData = SessionData(
     {
         "pk": "session",
