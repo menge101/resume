@@ -95,6 +95,10 @@ def act(
         session_data["translate"] = {"state": "closed"}
         logger.debug(f"Supported languages: {supported_langs}")
         logger.debug(f"Chosen language: {chosen_lang}")
+
+        # Of note, the following command here, in concert with the `== "open"` and `== "init"` checks above are used
+        # to verify that the action value received from the user is one of the acceptable and expected values,
+        # otherwise it is discarded and "en" is used instead.
         session_data["local"] = (
             chosen_lang.lower() if chosen_lang in supported_langs else "en"
         )
