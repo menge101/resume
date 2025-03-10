@@ -55,6 +55,14 @@
     margin-top: 2vw;
 }
 
+.centered {
+    text-align: center;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6em;
+}
+
 .is-a-button {
     border-style: outset;
     border-color: oklch(41.54% 0 0);
