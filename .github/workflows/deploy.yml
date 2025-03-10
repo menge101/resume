@@ -42,7 +42,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install uv
-          uv pip install -r requirements/dev.txt --system
+          uv pip install -r requirements/dev.txt --system --require-hashes
       - name: pytest
         run: |
           pytest
@@ -58,7 +58,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install uv
-          uv pip install -r requirements/dev.txt --system
+          uv pip install -r requirements/dev.txt --system --require-hashes
       - name: mypy
         run: |
           mypy .
@@ -79,7 +79,7 @@ jobs:
       - name: Install Deploy dependencies
         run: |
           python -m pip install uv
-          uv pip install -r requirements/dev.txt --system
+          uv pip install -r requirements/dev.txt --system --require-hashes
           npm install -g aws-cdk
       - name: Build
         run: |
