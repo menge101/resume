@@ -57,9 +57,9 @@
 
 .is-a-button {
     border-style: outset;
-    border-color: oklch(45.54% 0 0);
+    border-color: oklch(41.54% 0 0);
     align-content: center;
-    background-color: oklch(41.77% 0 0);
+    background-color: oklch(37.77% 0 0);
     display: flex;
     z-index: 10;
     cursor: pointer;
