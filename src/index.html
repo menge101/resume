@@ -30,7 +30,7 @@
 <div class="right-side is-a-button" onclick="print()">Print/Download</div>
 </div>
 <div class="body standard-size">
-    <div class="header fade" hx-get="/ui/header" hx-trigger="load">
+    <div class="centered fade" hx-get="/ui/header" hx-trigger="load">
         <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
     </div>
     <div class="skills fade" hx-get="/ui/skills" hx-trigger="load, session-created from:body" hx-swap="outerHTML">
@@ -50,6 +50,11 @@
         <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
     </div>
     <div class="invisible" hx-get="/ui/session" hx-trigger="load"></div>
+    <div class="footer centered no-print">
+        <a href="https://github.com/menge101/resume">
+            <img class="footer-logo" src="github-mark-white.svg" alt="Github logo"><span class="footer-text">Check out this project on Github!</span>
+        </a>
+    </div>
 </div>
 </body>
 </html>
