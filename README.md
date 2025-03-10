@@ -41,7 +41,7 @@ S3 is home to the static web content, the raw input and output files from transl
 Translations have been created by submitting the English language strings into Amazon Translate, then the resulting translated strings are written to a different S3 bucket when processing is complete.
 
 ### [Event Bridge](https://aws.amazon.com/eventbridge/)
-Event Bridge rules are used to identify when an Amazon Translate job completes successfully.  WHich is used to trigger a lambda function that reads the translations S3 bucket, identifies what translations are available and updates the system information in DynamoDB so that the web app has the new language available with no change in configuration needed.
+Event Bridge rules are used to identify when an Amazon Translate job completes successfully.  Which is used to trigger a lambda function that reads the translations S3 bucket, identifies what translations are available and updates the system information in DynamoDB so that the web app has the new language available with no change in configuration needed.
 
 ### [Cloud Front](https://aws.amazon.com/cloudfront/)
 Cloud Front is used as the "front door" for the application.  Static content from S3 is accesible through the S3 origin, and the dynamic data from Lambda is accessible through the lambda origin.  All of which map to the same DNS name, preventing any need for CORS.
