@@ -4,7 +4,7 @@
 
 body {
     color: aliceblue;
-    background-color: #333333;
+    background-color: oklch(32.11% 0 0);
     font-family: Calibri, Helvetica, Arial, sans-serif;
 }
 

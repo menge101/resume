@@ -57,12 +57,13 @@
 
 .is-a-button {
     border-style: outset;
-    border-color: #494949;
+    border-color: oklch(45.54% 0 0);
     align-content: center;
-    background-color: #3F3F3F;
+    background-color: oklch(41.77% 0 0);
     display: flex;
     z-index: 10;
     cursor: pointer;
+    padding: 1px;
 }
 
 .whole-fixed {
