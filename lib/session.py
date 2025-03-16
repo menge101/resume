@@ -75,11 +75,15 @@ def build(
 
 @xray_recorder.capture("## Retrieving session data from ddb table")
 def get_session_data(session_id: str, table_name: str) -> SessionData:
+    xray_recorder.begin_subsegment("Setting up Dynamo connection")
     rsrc = boto3.resource("dynamodb")
     tbl = rsrc.Table(table_name)
+    xray_recorder.end_subsegment()
+    xray_recorder.begin_subsegment("Actual call and response")
     response = tbl.get_item(
         Key={"pk": "session", "sk": session_id}, ConsistentRead=True
     )
+    xray_recorder.end_subsegment()
     logger.debug(f"Session data: {response['Item']}")
     return cast(SessionData, response["Item"])
 
