@@ -1,23 +1,13 @@
 from aws_xray_sdk.core import xray_recorder
 from aws_xray_sdk.core import patch_all
-from typing import cast
 import logging
 import os
 import sys
 
 
 from lib import (
-    banner,
-    cci,
     dispatch,
-    early,
-    education,
-    experience,
-    header,
     return_,
-    session,
-    skills,
-    translate,
 )
 
 
@@ -47,15 +37,15 @@ def handler(event: dict, context):
     dispatcher = dispatch.Dispatcher(
         data_table_name=table_name,
         elements={
-            "/header": cast(dispatch.Dispatchable, header),
-            "/experience": cast(dispatch.Dispatchable, experience),
-            "/skills": cast(dispatch.Dispatchable, skills),
-            "/education": cast(dispatch.Dispatchable, education),
-            "/early": cast(dispatch.Dispatchable, early),
-            "/cci": cast(dispatch.Dispatchable, cci),
-            "/session": cast(dispatch.Dispatchable, session),
-            "/translate": cast(dispatch.Dispatchable, translate),
-            "/banner": cast(dispatch.Dispatchable, banner),
+            "/header": "lib.header",
+            "/experience": "lib.experience",
+            "/skills": "lib.skills",
+            "/education": "lib.education",
+            "/early": "lib.early",
+            "/cci": "lib.cci",
+            "/session": "lib.session",
+            "/translate": "lib.translate",
+            "/banner": "lib.banner",
         },
         prefix="/ui",
     )
