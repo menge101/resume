@@ -1,5 +1,4 @@
 from aws_xray_sdk.core import xray_recorder
-from basilico import htmx
 from basilico.attributes import Class
 from basilico.elements import Li, Raw, Text, Ul
 from boto3.dynamodb.types import TypeDeserializer
@@ -25,9 +24,6 @@ def act(
 def apply_template(data):
     template = Ul(
         Class("no-bullets"),
-        htmx.Trigger("click"),
-        htmx.Swap("outerHTML"),
-        htmx.Get("/ui/header"),
         Li(Class("name biggest"), Text(data["name"])),
         Li(
             Class("other big"),

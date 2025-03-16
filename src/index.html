@@ -30,24 +30,189 @@
 <div class="right-side is-a-button" onclick="print()">Print/Download</div>
 </div>
 <div class="body standard-size">
-    <div class="centered fade" hx-get="/ui/header" hx-trigger="load">
-        <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
+    <div class="centered" hx-get="/ui/header" hx-trigger="load">
+        <ul class="no-bullets">
+            <li class="name biggest">Nathan Menge</li>
+            <li class="other big">Pittsburgh, PA &nbsp;&nbsp;·&nbsp;&nbsp; nathan.menge@gmail.com &nbsp;&nbsp;·&nbsp;&nbsp;
+                github.com/menge101
+            </li>
+        </ul>
     </div>
-    <div class="skills fade" hx-get="/ui/skills" hx-trigger="load, session-created from:body" hx-swap="outerHTML">
-        <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
+    <div class="skills" hx-get="/ui/skills" hx-trigger="load, session-created from:body" hx-swap="outerHTML">
+        <span class="bigger">Skills</span>
+        <ul class="bullets">
+            <li>AWS - a breadth of experience with DDB, EventBridge, ECS, EC2, Fargate, IAM, Lambda, RDS, S3, SQS, SNS,
+                and more
+            </li>
+            <li>Comfortable writing Infrastructure as Code using AWS CDK</li>
+            <li>Expert with Python and related tools</li>
+            <li>Highly proficient with Docker containers and related tooling</li>
+        </ul>
     </div>
-    <div id="experience fade" class="experience" hx-get="/ui/experience" hx-trigger="load, session-created from:body"
+    <div id="experience" class="experience" hx-get="/ui/experience" hx-trigger="load, session-created from:body"
          hx-swap="outerHTML">
-        <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
+        <span class="bigger">Relevant Experience</span>
+        <ul class="job no-bullets no-break-print">
+            <li><span class="name">UPMC Enterprises</span><span class="dates">&nbsp;&nbsp;·&nbsp;&nbsp;February 2022 - January 2025</span>
+            </li>
+            <li class="title-and-loc">Senior Cloud Infrastructure Engineer&nbsp;&nbsp;·&nbsp;&nbsp;Pittsburgh, PA</li>
+            <li>
+                <ul class="bullets">
+                    <li>Implemented an event driven security remediation system that allowed for nearly-instantaneous
+                        response to security events
+                    </li>
+                    <li>Implemented a log forwarding and aggregation system allowing for simple cross-organization
+                        regulatory compliance
+                    </li>
+                    <li>Implemented a StackSet deployment and auditing system to enable simple and consistent management
+                        of over 100 AWS accounts
+                    </li>
+                    <li>Designed our team's approach to using AWS CDK with Python, including best practices and
+                        standards for development and security
+                    </li>
+                    <li>Contributed to peer skill development</li>
+                </ul>
+            </li>
+        </ul>
+        <ul class="job no-bullets no-break-print">
+            <li><span class="name">UPMC Enterprises</span><span class="dates">&nbsp;&nbsp;·&nbsp;&nbsp;April 2021 - February 2022</span>
+            </li>
+            <li class="title-and-loc">Software Test Engineer - Expert&nbsp;&nbsp;·&nbsp;&nbsp;Pittsburgh, PA</li>
+            <li>
+                <ul class="bullets">
+                    <li>Researched Serverless technology and related processes to inform standards at both the team and
+                        company level
+                    </li>
+                    <li>Developed a system to analyze product's Google Analytics data and dynamically create a load
+                        testing profile
+                    </li>
+                    <li>Developed a system to enable control of Cloud Resources in our performance testing cluster from
+                        our chat-service
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <ul class="job no-bullets no-break-print">
+            <li><span class="name">Duquesne Light Corporation</span><span class="dates">&nbsp;&nbsp;·&nbsp;&nbsp;January 2020 - April 2021</span>
+            </li>
+            <li class="title-and-loc">Continuous Testing Lead&nbsp;&nbsp;·&nbsp;&nbsp;Pittsburgh, PA</li>
+            <li>
+                <ul class="bullets">
+                    <li>Principal engineer responsible for developing an automated testing framework using Python,
+                        Behave, Pytest, Pypom, Splinter, and Selenium
+                    </li>
+                    <li>Worked with technical leadership to plan and develop the company's move to CI/CD processes for
+                        software releases
+                    </li>
+                    <li>Built CI pipelines using Microsoft AzureDevops</li>
+                </ul>
+            </li>
+        </ul>
+        <ul class="job no-bullets no-break-print">
+            <li><span class="name">Arcadia.io</span><span class="dates">&nbsp;&nbsp;·&nbsp;&nbsp;September 2017 - October 2019</span>
+            </li>
+            <li class="title-and-loc">Director of Software Engineering&nbsp;&nbsp;·&nbsp;&nbsp;Pittsburgh, PA</li>
+            <li>
+                <ul class="bullets">
+                    <li>Managed a team of eleven engineers focused on using Ruby and Terraform to develop internal tools
+                        and testing infrastructure
+                    </li>
+                    <li>Designed and oversaw the development of a highly scalable load testing system built using
+                        Python, JMeter, Taurus, and AWS Fargate
+                    </li>
+                    <li>Directed development of an AWS-based Windows desktop application testing solution using EC2,
+                        CodeBuild, Terraform, Ruby, Appium, and Windows PowerShell
+                    </li>
+                    <li>Built multiple CI pipelines using AWS CodeBuild and Terraform</li>
+                </ul>
+            </li>
+        </ul>
+        <ul class="job no-bullets no-break-print">
+            <li><span class="name">Turnitin</span><span class="dates">&nbsp;&nbsp;·&nbsp;&nbsp;August 2015 - September 2017</span>
+            </li>
+            <li class="title-and-loc">Senior Quality Engineer&nbsp;&nbsp;·&nbsp;&nbsp;Pittsburgh, PA</li>
+            <li>
+                <ul class="bullets">
+                    <li>Developed and maintained components of a highly-available microservices-based educational
+                        software product using Python and Docker on AWS
+                    </li>
+                    <li>Built dashboards using React to communicate testing status to project leads hosted on AWS</li>
+                    <li>Contributed to in-house developed container orchestration and discovery system using ECS on
+                        AWS
+                    </li>
+                    <li>Created support and integrations into the Team's Slack bot to provide a convenient interface for
+                        internal tools
+                    </li>
+                    <li>Architected and implemented test data generation microservices to create consistent testing data
+                        across the microservice cluster
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <ul class="job no-bullets no-break-print">
+            <li><span class="name">UPMC Enterprises (f.k.a. Technology Development Center)</span><span class="dates">&nbsp;&nbsp;·&nbsp;&nbsp;August 2012 - August 2015</span>
+            </li>
+            <li class="title-and-loc">Lead Software Quality Engineer&nbsp;&nbsp;·&nbsp;&nbsp;Pittsburgh, PA</li>
+            <li>
+                <ul class="bullets">
+                    <li>Researched and implemented solutions in Ruby using automation tools and frameworks</li>
+                    <li>Managed the team’s time and priorities as SCRUM master</li>
+                    <li>Coordinated QA team resources and responsibilities as the Testing Lead for multiple teams</li>
+                    <li>Advised other development teams on the topic of implementing test automation</li>
+                </ul>
+            </li>
+        </ul>
     </div>
-    <div class="cci fade" hx-get="/ui/cci" hx-trigger="load, session-created from:body" hx-swap="outerHTML">
-        <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
+    <div class="cci" hx-get="/ui/cci" hx-trigger="load, session-created from:body" hx-swap="outerHTML">
+        <span class="bigger">Certifications &amp; Community Involvement</span>
+        <ul class="no-bullets no-break-print">
+            <li><span class="name">AWS Solutions Architect - Associate</span></li>
+        </ul>
+        <ul class="no-bullets no-break-print">
+            <li><span class="name">AWS Users' Group Pittsburgh</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span class="dates">February 2018 - 2023</span>
+            </li>
+            <li class="cci"><span class="title">Organizer and frequent speaker</span></li>
+            <li>
+                <ul class="bullets">
+                    <li class="bullets">Grew the group from 0 to over 700 members</li>
+                    <li class="bullets">Built the group's website using AWS Amplify and JavaScript</li>
+                    <li class="bullets">Leads cooperative coding exercises to develop a Meetup clone" utilizing AWS
+                        Amplify and JavaScript"
+                    </li>
+                    <li class="bullets">Organizes monthly user group meetings</li>
+                    <li class="bullets">Recruits speakers from the local and national technical community</li>
+                    <li class="bullets">Leads a team of five to drive the organization toward our goals</li>
+                </ul>
+            </li>
+        </ul>
     </div>
-    <div class="early-career fade" hx-get="/ui/early" hx-trigger="load, session-created from:body" hx-swap="outerHTML">
-        <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
+    <div class="early-career" hx-get="/ui/early" hx-trigger="load, session-created from:body" hx-swap="outerHTML">
+        <span class="bigger">Early Career Experience</span>
+        <ul class="no-bullets">
+            <li class="early-career no-break-print"><span class="name">Philips/Respironics – Validation &amp; Verification</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span
+                    class="title bold">Software Assurance Engineer</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span
+                    class="dates small">December 2008 - August 2008</span></li>
+            <li class="early-career no-break-print"><span class="name">Vocollect - Custom Systems</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span
+                    class="title bold">Quality Assurance Engineer</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span
+                    class="dates small">July 2008 - December 2008</span></li>
+            <li class="early-career no-break-print"><span class="name">Management Science Associates</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span
+                    class="title bold">Quality Assurance Analyst II</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span
+                    class="dates small">June 2006 - June 2006</span></li>
+            <li class="early-career no-break-print"><span class="name">Entigo Corporation</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span
+                    class="title bold">Quality Assurance Analyst</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span
+                    class="dates small">May 2003 - June 2003</span></li>
+        </ul>
     </div>
-    <div class="education fade" hx-get="/ui/education" hx-trigger="load, session-created from:body" hx-swap="outerHTML">
-        <img class="htmx-indicator loading-spinner" src="./spinner.svg"/>
+    <div class="education" hx-get="/ui/education" hx-trigger="load, session-created from:body" hx-swap="outerHTML">
+        <span class="bigger">Education</span>
+        <ul class="no-bullets no-break-print">
+            <li><span class="name">The University of Pittsburgh, School of Engineering</span></li>
+            <li>
+                <ul class="achievements no-bullets no-margin no-padding">
+                    <li>Bachelor of Science and Engineering in Computer Engineering</li>
+                </ul>
+            </li>
+        </ul>
     </div>
     <div class="invisible" hx-get="/ui/session" hx-trigger="load"></div>
     <div class="footer centered no-print">
