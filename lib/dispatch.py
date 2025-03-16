@@ -142,5 +142,7 @@ class Dispatcher:
             raise ValueError(
                 f"Method {info.method} is not supported, must be one of {' ,'.join(ALLOWED_METHODS)}"
             )
+        xray_recorder.begin_subsegment(f"importing {self.elements[info.path]}")
         module = importlib.import_module(self.elements[info.path])
+        xray_recorder.end_subsegment()
         return cast(Dispatchable, module)
