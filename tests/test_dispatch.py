@@ -98,46 +98,6 @@ def unsupported_event():
 
 
 @fixture
-def mock_element():
-    class MockElement:
-        @staticmethod
-        def act(*_args, **_kwargs):
-            return {}, []
-
-        @staticmethod
-        def build(*_args, **_kwargs):
-            return {
-                "headers": {"Content-Type": "text/html"},
-                "isBase64Encoded": False,
-                "statusCode": 200,
-                "body": "yolo",
-                "cookies": [],
-            }
-
-    return MockElement()
-
-
-@fixture
-def mock_element_that_triggers_event():
-    class MockElement:
-        @staticmethod
-        def act(*_args, **_kwargs):
-            return {}, ["yolo"]
-
-        @staticmethod
-        def build(*_args, **_kwargs):
-            return {
-                "headers": {"Content-Type": "text/html"},
-                "isBase64Encoded": False,
-                "statusCode": 200,
-                "body": "yolo",
-                "cookies": [],
-            }
-
-    return MockElement()
-
-
-@fixture
 def prefix():
     return "/ui"
 
@@ -147,10 +107,32 @@ def table_name():
     return "test-data-table"
 
 
-def test_dispatcher(http_request_event, table_name, mock_element, prefix, session_data):
+@fixture
+def mock_dispatchable(mocker):
+    return_value = {
+        "body": "yolo",
+        "cookies": [],
+        "headers": {"Content-Type": "text/html"},
+        "isBase64Encoded": False,
+        "statusCode": 200,
+    }
+    mock_module = mocker.Mock(name="mock_module")
+    mock_module.act.side_effect = lambda _d_tbl, data, _params: (data, [])
+    mock_module.build.side_effect = lambda *args: return_value
+    return mock_module
+
+
+@fixture
+def mock_import(mocker, mock_dispatchable):
+    return mocker.patch(
+        "lib.dispatch.importlib.import_module", return_value=mock_dispatchable
+    )
+
+
+def test_dispatcher(http_request_event, table_name, mock_import, prefix, session_data):
     observed = Dispatcher(
         data_table_name=table_name,
-        elements={"/element": mock_element},
+        elements={"/element": "lib.element"},
         prefix=prefix,
     ).dispatch(http_request_event)
     expected = {
@@ -163,10 +145,10 @@ def test_dispatcher(http_request_event, table_name, mock_element, prefix, sessio
     assert observed == expected
 
 
-def test_dispatch_post(post_event, table_name, mock_element, prefix, session_data):
+def test_dispatch_post(post_event, table_name, mock_import, prefix, session_data):
     observed = Dispatcher(
         data_table_name=table_name,
-        elements={"/element": mock_element},
+        elements={"/element": "lib.element"},
         prefix=prefix,
     ).dispatch(post_event)
     expected = {
@@ -179,27 +161,27 @@ def test_dispatch_post(post_event, table_name, mock_element, prefix, session_dat
     assert observed == expected
 
 
-def test_dispatch_delete(delete_event, table_name, mock_element, prefix, session_data):
+def test_dispatch_delete(delete_event, table_name, mock_import, prefix, session_data):
     observed_response = Dispatcher(
         data_table_name=table_name,
-        elements={"/element": mock_element},
+        elements={"/element": "lib.element"},
         prefix=prefix,
     ).dispatch(delete_event)
     assert observed_response["statusCode"] == 405
 
 
 def test_dispatch_unsupported_element(
-    unsupported_event, table_name, mock_element, prefix, session_data
+    unsupported_event, table_name, mock_import, prefix, session_data
 ):
     observed_response = Dispatcher(
         data_table_name=table_name,
-        elements={"/element": mock_element},
+        elements={"/element": "lib.element"},
         prefix=prefix,
     ).dispatch(unsupported_event)
     assert observed_response["statusCode"] == 404
 
 
-def test_dispatch_missing_path(table_name, mock_element, prefix, session_data):
+def test_dispatch_missing_path(table_name, mock_import, prefix, session_data):
     event = {
         "requestContext": {"http": {"method": "GET"}, "requestId": "yolo"},
         "rawQueryString": "",
@@ -207,13 +189,13 @@ def test_dispatch_missing_path(table_name, mock_element, prefix, session_data):
     }
     observed_response = Dispatcher(
         data_table_name=table_name,
-        elements={"/element": mock_element},
+        elements={"/element": "lib.element"},
         prefix=prefix,
     ).dispatch(event)
     assert observed_response["statusCode"] == 400
 
 
-def test_dispatch_missing_version(table_name, mock_element, prefix, session_data):
+def test_dispatch_missing_version(table_name, mock_import, prefix, session_data):
     event = {
         "requestContext": {
             "http": {"method": "GET", "path": "/ui/element"},
@@ -223,26 +205,26 @@ def test_dispatch_missing_version(table_name, mock_element, prefix, session_data
     }
     observed_response = Dispatcher(
         data_table_name=table_name,
-        elements={"/element": mock_element},
+        elements={"/element": "lib.element"},
         prefix=prefix,
     ).dispatch(event)
     assert observed_response["statusCode"] == 400
 
 
-def test_dispatch_missing_method(table_name, mock_element, prefix, session_data):
+def test_dispatch_missing_method(table_name, mock_import, prefix, session_data):
     event = {
         "requestContext": {"http": {"path": "/ui/element"}, "requestId": "yolo"},
         "rawQueryString": "",
     }
     observed_response = Dispatcher(
         data_table_name=table_name,
-        elements={"/element": mock_element},
+        elements={"/element": "lib.element"},
         prefix=prefix,
     ).dispatch(event)
     assert observed_response["statusCode"] == 400
 
 
-def test_dispatch_missing_request_id(table_name, mock_element, prefix, session_data):
+def test_dispatch_missing_request_id(table_name, mock_import, prefix, session_data):
     event = {
         "requestContext": {
             "http": {"path": "/ui/element", "method": "GET"},
@@ -251,13 +233,13 @@ def test_dispatch_missing_request_id(table_name, mock_element, prefix, session_d
     }
     observed_response = Dispatcher(
         data_table_name=table_name,
-        elements={"/element": mock_element},
+        elements={"/element": "lib.element"},
         prefix=prefix,
     ).dispatch(event)
     assert observed_response["statusCode"] == 400
 
 
-def test_dispatch_missing_query_string(table_name, mock_element, prefix, session_data):
+def test_dispatch_missing_query_string(table_name, mock_import, prefix, session_data):
     event = {
         "requestContext": {
             "http": {"path": "/ui/element", "method": "GET"},
@@ -266,13 +248,13 @@ def test_dispatch_missing_query_string(table_name, mock_element, prefix, session
     }
     observed_response = Dispatcher(
         data_table_name=table_name,
-        elements={"/element": mock_element},
+        elements={"/element": "lib.element"},
         prefix=prefix,
     ).dispatch(event)
     assert observed_response["statusCode"] == 400
 
 
-def test_no_expected_path(table_name, mock_element, session_data):
+def test_no_expected_path(table_name, mock_import, session_data):
     event = {
         "version": "2.0",
         "requestContext": {
@@ -282,7 +264,7 @@ def test_no_expected_path(table_name, mock_element, session_data):
     }
     observed = Dispatcher(
         data_table_name=table_name,
-        elements={"/element": mock_element},
+        elements={"/element": "lib.element"},
     ).dispatch(event)
     expected = {
         "body": "yolo",
@@ -295,15 +277,12 @@ def test_no_expected_path(table_name, mock_element, session_data):
 
 
 def test_dispatch_event_triggers_events(
-    table_name,
-    mock_element_that_triggers_event,
-    prefix,
-    session_data,
-    http_request_event,
+    table_name, prefix, session_data, http_request_event, mock_dispatchable, mock_import
 ):
+    mock_dispatchable.act.side_effect = lambda _d_tbl, data, _params: (data, ["yolo"])
     observed = Dispatcher(
         data_table_name=table_name,
-        elements={"/element": mock_element_that_triggers_event},
+        elements={"/element": "lib.element"},
         prefix=prefix,
     ).dispatch(http_request_event)
     expected = {
@@ -316,7 +295,9 @@ def test_dispatch_event_triggers_events(
     assert observed == expected
 
 
-def test_act_raises_value_error(table_name, mocker, mock_element, session_data):
+def test_act_raises_value_error(
+    table_name, mocker, mock_import, mock_dispatchable, session_data
+):
     event = {
         "version": "2.0",
         "requestContext": {
@@ -324,7 +305,7 @@ def test_act_raises_value_error(table_name, mocker, mock_element, session_data):
             "requestId": "yolo",
         },
     }
-    mocker.patch.object(mock_element, "act", side_effect=ValueError())
+    mock_dispatchable.act.side_effect = ValueError()
     expected = {
         "body": "<div>\nError: \n</div>",
         "cookies": [],
@@ -334,6 +315,6 @@ def test_act_raises_value_error(table_name, mocker, mock_element, session_data):
     }
     observed = Dispatcher(
         data_table_name=table_name,
-        elements={"/element": mock_element},
+        elements={"/element": "lib.element"},
     ).dispatch(event)
     assert observed == expected

@@ -2,6 +2,7 @@ from abc import abstractmethod
 from aws_xray_sdk.core import xray_recorder
 from types import ModuleType
 from typing import cast, Optional, Protocol
+import importlib
 import lens
 import logging
 import os
@@ -84,11 +85,11 @@ class Dispatcher:
     def __init__(
         self,
         data_table_name: str,
-        elements: dict[str, Dispatchable],
+        elements: dict[str, str],
         prefix: Optional[str] = None,
     ):
         self.data_table_name: str = data_table_name
-        self.elements: dict[str, Dispatchable] = elements
+        self.elements: dict[str, str] = elements
         self.prefix: Optional[str] = prefix
         self.session_data: session.SessionData = session.SessionData({})
         self.valid_element: Optional[ModuleType] = None
@@ -141,4 +142,5 @@ class Dispatcher:
             raise ValueError(
                 f"Method {info.method} is not supported, must be one of {' ,'.join(ALLOWED_METHODS)}"
             )
-        return self.elements[info.path]
+        module = importlib.import_module(self.elements[info.path])
+        return cast(Dispatchable, module)
