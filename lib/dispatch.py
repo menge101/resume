@@ -8,7 +8,7 @@ import logging
 import os
 
 
-from lib import return_, session
+from lib import return_, session, threading
 
 
 logging_level = os.environ.get("logging_level", "DEBUG").upper()
@@ -20,7 +20,7 @@ class Dispatchable(Protocol):
     @abstractmethod
     def act(
         self,
-        data_table_name: str,
+        connection_thread: threading.ReturningThread,
         session_data: session.SessionData,
         query_params: dict[str, str],
     ) -> tuple[session.SessionData, list[str]]:
@@ -28,7 +28,9 @@ class Dispatchable(Protocol):
 
     @abstractmethod
     def build(
-        self, data_table_name: str, session_data: session.SessionData
+        self,
+        connection_thread: threading.ReturningThread,
+        session_data: session.SessionData,
     ) -> return_.Returnable:
         raise NotImplementedError  # pragma: no cover
 
@@ -36,9 +38,7 @@ class Dispatchable(Protocol):
 class DispatchInfo:
     def __init__(self, event: dict, expected_path_prefix: Optional[str] = None):
         self.event = event
-        self.method: str = lens.focus(
-            event, ["requestContext", "http", "method"], default_result=False
-        )
+        self.method: str = lens.focus(event, ["requestContext", "http", "method"], default_result=False)
         try:
             self.path: str = self.remove_prefix(
                 expected_path_prefix,
@@ -46,12 +46,8 @@ class DispatchInfo:
             )
         except lens.FocusingError:
             self.path = None  # type: ignore
-        self.request_id: str = lens.focus(
-            event, ["requestContext", "requestId"], default_result=False
-        )
-        self.query_params = lens.focus(
-            event, ["queryStringParameters"], default_result=dict()
-        )
+        self.request_id: str = lens.focus(event, ["requestContext", "requestId"], default_result=False)
+        self.query_params = lens.focus(event, ["queryStringParameters"], default_result=dict())
         try:
             self.session_id: Optional[str] = session.get_session_id_from_cookies(event)
         except KeyError:
@@ -67,9 +63,7 @@ class DispatchInfo:
     def validate(self) -> None:
         errors = []
         if self.event.get("version") != "2.0":
-            errors.append(
-                f"Invalid version: {self.event.get('version')}, should be 2.0"
-            )
+            errors.append(f"Invalid version: {self.event.get('version')}, should be 2.0")
         if self.method is False:
             errors.append("Method field not found")
         if self.path is None:
@@ -84,11 +78,11 @@ class DispatchInfo:
 class Dispatcher:
     def __init__(
         self,
-        data_table_name: str,
+        connection_thread: threading.ReturningThread,
         elements: dict[str, str],
         prefix: Optional[str] = None,
     ):
-        self.data_table_name: str = data_table_name
+        self.connection_thread = connection_thread
         self.elements: dict[str, str] = elements
         self.prefix: Optional[str] = prefix
         self.session_data: session.SessionData = session.SessionData({})
@@ -101,12 +95,8 @@ class Dispatcher:
     ) -> return_.Returnable:
         if not triggered_events:
             return response
-        existing_triggered_events: str = lens.focus(
-            response, ["headers", "HX-Trigger"], default_result=""
-        )
-        triggered_events.extend(
-            map(lambda x: x.strip(), existing_triggered_events.split(","))
-        )
+        existing_triggered_events: str = lens.focus(response, ["headers", "HX-Trigger"], default_result="")
+        triggered_events.extend(map(lambda x: x.strip(), existing_triggered_events.split(",")))
         headers: dict = cast(dict, response["headers"])
         headers["HX-Trigger"] = ", ".join(triggered_events)
         return response
@@ -125,23 +115,19 @@ class Dispatcher:
             return return_.error(ke, 404)
         except ValueError as ve:
             return return_.error(ve, 405)
-        session_data = session.handle_session(event, self.data_table_name)
+        session_data = session.handle_session(event, self.connection_thread)
         try:
-            session_data, triggered_events = dispatchee.act(
-                self.data_table_name, session_data, info.query_params
-            )
+            session_data, triggered_events = dispatchee.act(self.connection_thread, session_data, info.query_params)
         except ValueError as ve:
             return return_.error(ve, 500)
-        built = dispatchee.build(self.data_table_name, session_data)
+        built = dispatchee.build(self.connection_thread, session_data)
         return self.add_triggered_events_to_response(built, triggered_events)
 
     @xray_recorder.capture("## Validating request")
     def validate(self, info: DispatchInfo) -> Dispatchable:
         ALLOWED_METHODS = ["GET", "POST"]
         if info.method not in ALLOWED_METHODS:
-            raise ValueError(
-                f"Method {info.method} is not supported, must be one of {' ,'.join(ALLOWED_METHODS)}"
-            )
+            raise ValueError(f"Method {info.method} is not supported, must be one of {' ,'.join(ALLOWED_METHODS)}")
         xray_recorder.begin_subsegment(f"importing {self.elements[info.path]}")
         module = importlib.import_module(self.elements[info.path])
         xray_recorder.end_subsegment()

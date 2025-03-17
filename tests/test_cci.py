@@ -3,11 +3,6 @@ from lib import cci
 
 
 @fixture
-def client_mock(mocker):
-    return mocker.patch("lib.experience.boto3.client")
-
-
-@fixture
 def data_response():
     return {
         "Items": [
@@ -24,9 +19,7 @@ def data_response():
             },
             {
                 "sk": {"S": "cci#1#achievement#1"},
-                "text": {
-                    "S": "Built the group's website using AWS Amplify and JavaScript"
-                },
+                "text": {"S": "Built the group's website using AWS Amplify and JavaScript"},
             },
         ]
     }
@@ -60,38 +53,46 @@ def invalid_title_response():
             },
             {
                 "sk": {"S": "cci#1#achievement#1"},
-                "text": {
-                    "S": "Built the group's website using AWS Amplify and JavaScript"
-                },
+                "text": {"S": "Built the group's website using AWS Amplify and JavaScript"},
             },
         ]
     }
 
 
-def test_build(client_mock, data_response, session_data, table_name):
-    client_mock.return_value.get_item.return_value = {"Item": {"text": {"S": "yolo"}}}
-    client_mock.return_value.query.return_value = data_response
-    observed = cci.build(table_name, session_data)
+def test_build(client_mock, connection_thread_mock, data_response, session_data, table_name):
+    client_mock.get_item.return_value = {"Item": {"text": {"S": "yolo"}}}
+    client_mock.query.return_value = data_response
+    observed = cci.build(connection_thread_mock, session_data)
     assert observed["headers"] == {"Content-Type": "text/html"}
     assert observed["statusCode"] == 200
 
 
 def test_invalid_achievement(
-    client_mock, invalid_achievement_response, session_data, table_name
+    client_mock,
+    connection_thread_mock,
+    invalid_achievement_response,
+    session_data,
+    table_name,
 ):
-    client_mock.return_value.get_item.return_value = {"Item": {"text": {"S": "yolo"}}}
-    client_mock.return_value.query.return_value = invalid_achievement_response
+    client_mock.get_item.return_value = {"Item": {"text": {"S": "yolo"}}}
+    client_mock.query.return_value = invalid_achievement_response
     with raises(ValueError):
-        cci.build(table_name, session_data)
+        cci.build(connection_thread_mock, session_data)
 
 
-def test_invalid_cci(client_mock, invalid_title_response, session_data, table_name):
-    client_mock.return_value.get_item.return_value = {"Item": {"text": {"S": "yolo"}}}
-    client_mock.return_value.query.return_value = invalid_title_response
+def test_invalid_cci(
+    client_mock,
+    connection_thread_mock,
+    invalid_title_response,
+    session_data,
+    table_name,
+):
+    client_mock.get_item.return_value = {"Item": {"text": {"S": "yolo"}}}
+    client_mock.query.return_value = invalid_title_response
     with raises(AttributeError):
-        cci.build(table_name, session_data)
+        cci.build(connection_thread_mock, session_data)
 
 
-def test_act():
-    data, events = cci.act("yolo", {}, {})
+def test_act(connection_thread_mock):
+    data, events = cci.act(connection_thread_mock, {}, {})
     assert data == {}

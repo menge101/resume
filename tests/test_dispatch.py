@@ -124,14 +124,19 @@ def mock_dispatchable(mocker):
 
 @fixture
 def mock_import(mocker, mock_dispatchable):
-    return mocker.patch(
-        "lib.dispatch.importlib.import_module", return_value=mock_dispatchable
-    )
+    return mocker.patch("lib.dispatch.importlib.import_module", return_value=mock_dispatchable)
 
 
-def test_dispatcher(http_request_event, table_name, mock_import, prefix, session_data):
+def test_dispatcher(
+    connection_thread_mock,
+    http_request_event,
+    table_name,
+    mock_import,
+    prefix,
+    session_data,
+):
     observed = Dispatcher(
-        data_table_name=table_name,
+        connection_thread=connection_thread_mock,
         elements={"/element": "lib.element"},
         prefix=prefix,
     ).dispatch(http_request_event)
@@ -145,9 +150,9 @@ def test_dispatcher(http_request_event, table_name, mock_import, prefix, session
     assert observed == expected
 
 
-def test_dispatch_post(post_event, table_name, mock_import, prefix, session_data):
+def test_dispatch_post(connection_thread_mock, post_event, table_name, mock_import, prefix, session_data):
     observed = Dispatcher(
-        data_table_name=table_name,
+        connection_thread=connection_thread_mock,
         elements={"/element": "lib.element"},
         prefix=prefix,
     ).dispatch(post_event)
@@ -161,9 +166,9 @@ def test_dispatch_post(post_event, table_name, mock_import, prefix, session_data
     assert observed == expected
 
 
-def test_dispatch_delete(delete_event, table_name, mock_import, prefix, session_data):
+def test_dispatch_delete(connection_thread_mock, delete_event, table_name, mock_import, prefix, session_data):
     observed_response = Dispatcher(
-        data_table_name=table_name,
+        connection_thread=connection_thread_mock,
         elements={"/element": "lib.element"},
         prefix=prefix,
     ).dispatch(delete_event)
@@ -171,31 +176,36 @@ def test_dispatch_delete(delete_event, table_name, mock_import, prefix, session_
 
 
 def test_dispatch_unsupported_element(
-    unsupported_event, table_name, mock_import, prefix, session_data
+    connection_thread_mock,
+    unsupported_event,
+    table_name,
+    mock_import,
+    prefix,
+    session_data,
 ):
     observed_response = Dispatcher(
-        data_table_name=table_name,
+        connection_thread=connection_thread_mock,
         elements={"/element": "lib.element"},
         prefix=prefix,
     ).dispatch(unsupported_event)
     assert observed_response["statusCode"] == 404
 
 
-def test_dispatch_missing_path(table_name, mock_import, prefix, session_data):
+def test_dispatch_missing_path(connection_thread_mock, table_name, mock_import, prefix, session_data):
     event = {
         "requestContext": {"http": {"method": "GET"}, "requestId": "yolo"},
         "rawQueryString": "",
         "version": "2.0",
     }
     observed_response = Dispatcher(
-        data_table_name=table_name,
+        connection_thread=connection_thread_mock,
         elements={"/element": "lib.element"},
         prefix=prefix,
     ).dispatch(event)
     assert observed_response["statusCode"] == 400
 
 
-def test_dispatch_missing_version(table_name, mock_import, prefix, session_data):
+def test_dispatch_missing_version(connection_thread_mock, table_name, mock_import, prefix, session_data):
     event = {
         "requestContext": {
             "http": {"method": "GET", "path": "/ui/element"},
@@ -204,27 +214,27 @@ def test_dispatch_missing_version(table_name, mock_import, prefix, session_data)
         "rawQueryString": "",
     }
     observed_response = Dispatcher(
-        data_table_name=table_name,
+        connection_thread=connection_thread_mock,
         elements={"/element": "lib.element"},
         prefix=prefix,
     ).dispatch(event)
     assert observed_response["statusCode"] == 400
 
 
-def test_dispatch_missing_method(table_name, mock_import, prefix, session_data):
+def test_dispatch_missing_method(connection_thread_mock, table_name, mock_import, prefix, session_data):
     event = {
         "requestContext": {"http": {"path": "/ui/element"}, "requestId": "yolo"},
         "rawQueryString": "",
     }
     observed_response = Dispatcher(
-        data_table_name=table_name,
+        connection_thread=connection_thread_mock,
         elements={"/element": "lib.element"},
         prefix=prefix,
     ).dispatch(event)
     assert observed_response["statusCode"] == 400
 
 
-def test_dispatch_missing_request_id(table_name, mock_import, prefix, session_data):
+def test_dispatch_missing_request_id(connection_thread_mock, table_name, mock_import, prefix, session_data):
     event = {
         "requestContext": {
             "http": {"path": "/ui/element", "method": "GET"},
@@ -232,14 +242,14 @@ def test_dispatch_missing_request_id(table_name, mock_import, prefix, session_da
         "rawQueryString": "",
     }
     observed_response = Dispatcher(
-        data_table_name=table_name,
+        connection_thread=connection_thread_mock,
         elements={"/element": "lib.element"},
         prefix=prefix,
     ).dispatch(event)
     assert observed_response["statusCode"] == 400
 
 
-def test_dispatch_missing_query_string(table_name, mock_import, prefix, session_data):
+def test_dispatch_missing_query_string(connection_thread_mock, mock_import, prefix, session_data):
     event = {
         "requestContext": {
             "http": {"path": "/ui/element", "method": "GET"},
@@ -247,14 +257,14 @@ def test_dispatch_missing_query_string(table_name, mock_import, prefix, session_
         },
     }
     observed_response = Dispatcher(
-        data_table_name=table_name,
+        connection_thread=connection_thread_mock,
         elements={"/element": "lib.element"},
         prefix=prefix,
     ).dispatch(event)
     assert observed_response["statusCode"] == 400
 
 
-def test_no_expected_path(table_name, mock_import, session_data):
+def test_no_expected_path(connection_thread_mock, mock_import, session_data):
     event = {
         "version": "2.0",
         "requestContext": {
@@ -263,7 +273,7 @@ def test_no_expected_path(table_name, mock_import, session_data):
         },
     }
     observed = Dispatcher(
-        data_table_name=table_name,
+        connection_thread=connection_thread_mock,
         elements={"/element": "lib.element"},
     ).dispatch(event)
     expected = {
@@ -277,11 +287,16 @@ def test_no_expected_path(table_name, mock_import, session_data):
 
 
 def test_dispatch_event_triggers_events(
-    table_name, prefix, session_data, http_request_event, mock_dispatchable, mock_import
+    connection_thread_mock,
+    prefix,
+    session_data,
+    http_request_event,
+    mock_dispatchable,
+    mock_import,
 ):
     mock_dispatchable.act.side_effect = lambda _d_tbl, data, _params: (data, ["yolo"])
     observed = Dispatcher(
-        data_table_name=table_name,
+        connection_thread=connection_thread_mock,
         elements={"/element": "lib.element"},
         prefix=prefix,
     ).dispatch(http_request_event)
@@ -295,9 +310,7 @@ def test_dispatch_event_triggers_events(
     assert observed == expected
 
 
-def test_act_raises_value_error(
-    table_name, mocker, mock_import, mock_dispatchable, session_data
-):
+def test_act_raises_value_error(connection_thread_mock, mock_import, mock_dispatchable, session_data):
     event = {
         "version": "2.0",
         "requestContext": {
@@ -314,7 +327,7 @@ def test_act_raises_value_error(
         "statusCode": 500,
     }
     observed = Dispatcher(
-        data_table_name=table_name,
+        connection_thread=connection_thread_mock,
         elements={"/element": "lib.element"},
     ).dispatch(event)
     assert observed == expected

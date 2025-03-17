@@ -25,12 +25,8 @@ class Web(Construct):
         removal_policy: Optional[RemovalPolicy] = RemovalPolicy.RETAIN,
         logging_level: Optional[str] = None,
         tracing: Optional[bool] = False,
-        cache_policy: Optional[
-            cloudfront.CachePolicy
-        ] = cloudfront.CachePolicy.CACHING_OPTIMIZED,
-        origin_policy: Optional[
-            cloudfront.OriginRequestPolicy
-        ] = cloudfront.OriginRequestPolicy.ALL_VIEWER,
+        cache_policy: Optional[cloudfront.CachePolicy] = cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        origin_policy: Optional[cloudfront.OriginRequestPolicy] = cloudfront.OriginRequestPolicy.ALL_VIEWER,
         function_environment_variables: Optional[dict[str, str]] = None,
         domain_name: str | None = None,
     ) -> None:
@@ -95,12 +91,8 @@ class Web(Construct):
             "s3-origin-access-control",
             signing=cast(cloudfront.Signing, cloudfront.Signing.SIGV4_ALWAYS),
         )
-        certificate = (
-            self.create_certificate(domain_name=domain_name) if domain_name else None
-        )
-        domain_names: list[str] | None = (
-            [cast(str, domain_name)] if domain_name else None
-        )
+        certificate = self.create_certificate(domain_name=domain_name) if domain_name else None
+        domain_names: list[str] | None = [cast(str, domain_name)] if domain_name else None
         self.distribution = cloudfront.Distribution(
             self,
             "distribution",
@@ -151,9 +143,7 @@ class Web(Construct):
         CfnOutput(self, "cf_domain", value=self.distribution.domain_name)
 
     def create_certificate(self, domain_name: str) -> acm.Certificate:
-        hosted_zone = r53.HostedZone.from_lookup(
-            self, "hosted-zone", domain_name=domain_name
-        )
+        hosted_zone = r53.HostedZone.from_lookup(self, "hosted-zone", domain_name=domain_name)
         return acm.Certificate(
             self,
             "cert",

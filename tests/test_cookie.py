@@ -10,9 +10,7 @@ def domain():
 
 @fixture
 def expiration():
-    return datetime(
-        year=2025, month=1, day=1, hour=0, minute=0, second=0, tzinfo=timezone.utc
-    )
+    return datetime(year=2025, month=1, day=1, hour=0, minute=0, second=0, tzinfo=timezone.utc)
 
 
 @fixture

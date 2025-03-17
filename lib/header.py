@@ -2,8 +2,12 @@ from aws_xray_sdk.core import xray_recorder
 from basilico.attributes import Class
 from basilico.elements import Li, Raw, Text, Ul
 from boto3.dynamodb.types import TypeDeserializer
-from lib import return_, session
-import boto3
+from lib import return_, session, threading, types
+from mypy_boto3_dynamodb.type_defs import (
+    KeysAndAttributesTypeDef,
+    KeysAndAttributesOutputTypeDef,
+)
+from typing import cast, Mapping
 import logging
 import os
 
@@ -15,7 +19,9 @@ logger.setLevel(logging_level)
 
 @xray_recorder.capture("## Header act function")
 def act(
-    _data_table_name: str, session_data: session.SessionData, _params: dict[str, str]
+    _connection_thread: threading.ReturningThread,
+    session_data: session.SessionData,
+    _params: dict[str, str],
 ) -> tuple[session.SessionData, list[str]]:
     return session_data, []
 
@@ -39,10 +45,10 @@ def apply_template(data):
 
 
 @xray_recorder.capture("## Header build function")
-def build(table_name: str, *_args, **_kwargs):
+def build(connection_thread: threading.ReturningThread, *_args, **_kwargs):
     logger.debug("Starting header build")
-    ddb_client = boto3.client("dynamodb")
-    request = {
+    table_name, ddb_client, _ = cast(types.ConnectionThreadResultType, connection_thread.join())
+    request: Mapping[str, KeysAndAttributesTypeDef | KeysAndAttributesOutputTypeDef] = {
         table_name: {
             "Keys": [
                 {"pk": {"S": "name"}, "sk": {"S": "none"}},
@@ -67,8 +73,5 @@ def build(table_name: str, *_args, **_kwargs):
 def unpack_response(response: dict, table_name: str) -> dict[str, list[str] | str]:
     responses = response["Responses"][table_name]
     deserializer = TypeDeserializer()
-    python_data = {
-        deserializer.deserialize(row["pk"]): deserializer.deserialize(row["text"])
-        for row in responses
-    }
+    python_data = {deserializer.deserialize(row["pk"]): deserializer.deserialize(row["text"]) for row in responses}
     return python_data

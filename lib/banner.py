@@ -1,7 +1,7 @@
 from aws_xray_sdk.core import xray_recorder
 from basilico.attributes import Class
 from basilico.elements import Div, Text
-from lib import return_, session
+from lib import return_, session, threading
 from typing import Optional
 import logging
 import os
@@ -14,7 +14,9 @@ logger.setLevel(logging_level)
 
 @xray_recorder.capture("## Banner act function")
 def act(
-    _data_table_name: str, session_data: session.SessionData, _params: dict[str, str]
+    _connection_thread: threading.ReturningThread,
+    session_data: session.SessionData,
+    _params: dict[str, str],
 ) -> tuple[session.SessionData, list[str]]:
     return session_data, []
 

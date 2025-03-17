@@ -31,7 +31,5 @@ class Logging(Stack):
             runtime=cast(lam.Runtime, lam.Runtime.PYTHON_3_13),
             role=self.role,
         )
-        function_url = self.function.add_function_url(
-            auth_type=lam.FunctionUrlAuthType.NONE
-        )
+        function_url = self.function.add_function_url(auth_type=lam.FunctionUrlAuthType.NONE)
         CfnOutput(self, "url", value=function_url.url)

@@ -2,9 +2,8 @@ from aws_xray_sdk.core import xray_recorder
 from basilico import htmx
 from basilico.attributes import Class
 from basilico.elements import Div, Element, Li, Span, Text, Ul
-from lib import return_, session
-from typing import Optional
-import boto3
+from lib import return_, session, threading, types
+from typing import cast, Optional
 import lens
 import logging
 import os
@@ -51,7 +50,9 @@ class Education:
 
 @xray_recorder.capture("## Education act function")
 def act(
-    _data_table_name: str, session_data: session.SessionData, _params: dict[str, str]
+    _connection_thread: threading.ReturningThread,
+    session_data: session.SessionData,
+    _params: dict[str, str],
 ) -> tuple[session.SessionData, list[str]]:
     return session_data, []
 
@@ -71,10 +72,13 @@ def apply_template(heading: str, data: list[Education]) -> str:
 
 @xray_recorder.capture("## Building education body")
 def build(
-    table_name: str, session_data: dict[str, str], *_args, **_kwargs
+    connection_thread: threading.ReturningThread,
+    session_data: dict[str, str],
+    *_args,
+    **_kwargs,
 ) -> return_.Returnable:
     logger.debug("Starting education build")
-    ddb_client = boto3.client("dynamodb")
+    table_name, ddb_client, _ = cast(types.ConnectionThreadResultType, connection_thread.join())
     localization: str = session_data.get("local", "en")
     heading: str = get_heading(ddb_client, localization, table_name)
     exp_data: list[Education] = get_data(ddb_client, localization, table_name)

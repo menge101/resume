@@ -1,10 +1,9 @@
 from aws_xray_sdk.core import xray_recorder
 from datetime import datetime
-from lib import cookie, return_
+from lib import cookie, return_, threading, types
 from typing import cast, NewType, Optional
 from uuid import uuid1
 import botocore.exceptions
-import boto3
 import logging
 import os
 
@@ -28,7 +27,9 @@ DEFAULT_SESSION_VALUES: SessionData = SessionData(
 
 @xray_recorder.capture("## Creating session maybe")
 def act(
-    data_table_name: str, session_data: SessionData, _query_params: dict[str, str]
+    connection_thread: threading.ReturningThread,
+    session_data: SessionData,
+    _query_params: dict[str, str],
 ) -> tuple[SessionData, list[str]]:
     session_id = session_data.get("id_", None)
     if session_id:
@@ -41,16 +42,18 @@ def act(
     session_data["sk"] = session_id
     session_data["id_"] = session_id
     session_data["ttl"] = str(cookie.expiration_as_ttl(exp))
-    update_session(data_table_name=data_table_name, session_data=session_data)
+    update_session(connection_thread=connection_thread, session_data=session_data)
     return session_data, ["session-created"]
 
 
 @xray_recorder.capture("## Building session element")
 def build(
-    table_name: str, session_data: SessionData, *_args, **_kwargs
+    _connection_thread: threading.ReturningThread,
+    session_data: SessionData,
+    *_args,
+    **_kwargs,
 ) -> return_.Returnable:
     logger.debug(f"Session build: {session_data}")
-    logger.debug(f"Table name: {table_name}")
     if not session_data:
         raise ValueError("Session should be set by act function, prior to build call")
     try:
@@ -74,16 +77,9 @@ def build(
 
 
 @xray_recorder.capture("## Retrieving session data from ddb table")
-def get_session_data(session_id: str, table_name: str) -> SessionData:
-    xray_recorder.begin_subsegment("Setting up Dynamo connection")
-    rsrc = boto3.resource("dynamodb")
-    tbl = rsrc.Table(table_name)
-    xray_recorder.end_subsegment()
-    xray_recorder.begin_subsegment("Actual call and response")
-    response = tbl.get_item(
-        Key={"pk": "session", "sk": session_id}, ConsistentRead=True
-    )
-    xray_recorder.end_subsegment()
+def get_session_data(session_id: str, table_connection_thread: threading.ReturningThread) -> SessionData:
+    _, _, tbl = cast(types.ConnectionThreadResultType, table_connection_thread.join())
+    response = tbl.get_item(Key={"pk": "session", "sk": session_id}, ConsistentRead=True)
     logger.debug(f"Session data: {response['Item']}")
     return cast(SessionData, response["Item"])
 
@@ -99,28 +95,23 @@ def get_session_id_from_cookies(event: dict) -> str:
 
 
 @xray_recorder.capture("## Handling session data")
-def handle_session(event: dict, table_name: str) -> SessionData:
+def handle_session(event: dict, table_connection_thread: threading.ReturningThread) -> SessionData:
     try:
         session_id = get_session_id_from_cookies(event)
     except KeyError:
         return DEFAULT_SESSION_VALUES
-    return get_session_data(session_id, table_name)
+    return get_session_data(session_id, table_connection_thread)
 
 
 @xray_recorder.capture("## Creating/Updating session data")
-def update_session(
-    data_table_name: str, session_data: dict[str, Optional[str]]
-) -> None:
+def update_session(connection_thread: threading.ReturningThread, session_data: dict[str, Optional[str]]) -> None:
     logger.debug("Writing session to ddb")
     logger.debug(f"Session data: {session_data}")
-    ddb_rsrc = boto3.resource("dynamodb")
-    ddb_tbl = ddb_rsrc.Table(data_table_name)
+    _, _, ddb_tbl = cast(types.ConnectionThreadResultType, connection_thread.join())
     try:
         ddb_tbl.put_item(Item=session_data)
     except botocore.exceptions.ClientError as ce:
         logger.exception(ce)
         logger.error("Failed to write session data")
-        raise ValueError(
-            "Improperly formatted session data, likely stemming from session corruption"
-        ) from ce
+        raise ValueError("Improperly formatted session data, likely stemming from session corruption") from ce
     logger.debug(f"Session written to ddb: {session_data}")

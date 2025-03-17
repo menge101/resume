@@ -3,9 +3,8 @@ from basilico import htmx
 from basilico.attributes import Class, ID, Src
 from basilico.elements import Div, Img, Li, Text, Ul
 from lens import lens
-from lib import language, return_, session
+from lib import language, return_, session, threading
 from typing import cast
-import boto3
 import logging
 import os
 
@@ -69,13 +68,13 @@ LANGUAGE_CODE = {"FA-AF": "PRS", "PT-PT": "PT"}
 
 @xray_recorder.capture("## Translate acting")
 def act(
-    data_table_name: str, session_data: session.SessionData, params: dict[str, str]
+    connection_thread: threading.ReturningThread,
+    session_data: session.SessionData,
+    params: dict[str, str],
 ) -> tuple[session.SessionData, list[str]]:
     # This guards against the edge case where an action is requested prior to the session being initialized
     if "id_" not in session_data or "sk" not in session_data:
-        raise ValueError(
-            "Improperly formatted session data, likely stemming from session corruption"
-        )
+        raise ValueError("Improperly formatted session data, likely stemming from session corruption")
 
     # Translation element supports two actions
     # 1) Opening the choice menu
@@ -88,9 +87,7 @@ def act(
         events = []
     # 3) Choosing a language/localization
     else:
-        supported_langs = language.get_supported(
-            boto3.resource("dynamodb"), data_table_name
-        )
+        supported_langs = language.get_supported(connection_thread)
         chosen_lang = params.get("action", "en")
         session_data["translate"] = {"state": "closed"}
         logger.debug(f"Supported languages: {supported_langs}")
@@ -99,12 +96,10 @@ def act(
         # Of note, the following command here, in concert with the `== "open"` and `== "init"` checks above are used
         # to verify that the action value received from the user is one of the acceptable and expected values,
         # otherwise it is discarded and "en" is used instead.
-        session_data["local"] = (
-            chosen_lang.lower() if chosen_lang in supported_langs else "en"
-        )
+        session_data["local"] = chosen_lang.lower() if chosen_lang in supported_langs else "en"
         events = ["language-updated"]
     logger.debug(f"Translate act new session data: {session_data}")
-    session.update_session(data_table_name, session_data)
+    session.update_session(connection_thread, session_data)
     return session_data, events
 
 
@@ -122,8 +117,11 @@ def apply_closed_template(language: str) -> str:
     return template.string()
 
 
-def apply_open_template(current_language: str, data_table_name: str) -> str:
-    languages = language.get_supported(boto3.resource("dynamodb"), data_table_name)
+def apply_open_template(
+    current_language: str,
+    connection_thread: threading.ReturningThread,
+) -> str:
+    languages = language.get_supported(connection_thread)
     languages.sort()
     languages = [lang for lang in languages if lang != current_language]
     languages.insert(0, current_language)
@@ -140,12 +138,15 @@ def apply_open_template(current_language: str, data_table_name: str) -> str:
 
 @xray_recorder.capture("## Translate building")
 def build(
-    table_name: str, session_data: session.SessionData, *_args, **_kwargs
+    connection_thread: threading.ReturningThread,
+    session_data: session.SessionData,
+    *_args,
+    **_kwargs,
 ) -> return_.Returnable:
     state = lens.focus(session_data, ["translate", "state"], default_result="closed")
     language = cast(str, session_data.get("local", "en"))
     if state == "open":
-        template = apply_open_template(language, table_name)
+        template = apply_open_template(language, connection_thread)
     elif state == "closed":
         template = apply_closed_template(language)
     else:
@@ -160,10 +161,7 @@ def get_existing_en_data(client, table_name) -> dict[str, str]:
         KeyConditionExpression="pk = :pkval",
         ExpressionAttributeValues={":pkval": {"S": "en"}},
     )
-    return {
-        lens.focus(record, ["sk", "S"]): lens.focus(record, ["text", "S"])
-        for record in response.get("Items", [])
-    }
+    return {lens.focus(record, ["sk", "S"]): lens.focus(record, ["text", "S"]) for record in response.get("Items", [])}
 
 
 def language_button(lang: str) -> Li:

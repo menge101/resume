@@ -13,9 +13,7 @@ Returnable = NewType("Returnable", dict[str, bool | dict | int | str])
 
 
 @xray_recorder.capture("### Returning error")
-def error(
-    exception: Exception, status_code: int, headers: Optional[dict[str, str]] = None
-) -> Returnable:
+def error(exception: Exception, status_code: int, headers: Optional[dict[str, str]] = None) -> Returnable:
     body = f"<div>\nError: {str(exception)}\n</div>"
     headers = headers or {}
     return http(body, status_code, headers)

@@ -2,8 +2,8 @@ from aws_xray_sdk.core import xray_recorder
 from basilico import htmx
 from basilico.attributes import Class
 from basilico.elements import Div, Li, Span, Text, Ul
-from lib import return_, session
-import boto3
+from lib import return_, session, threading, types
+from typing import cast
 import lens
 import logging
 import os
@@ -19,7 +19,9 @@ SKILLS_HEADING_SK = "heading#skills"
 
 @xray_recorder.capture("## Skills act function")
 def act(
-    _data_table_name: str, session_data: session.SessionData, _params: dict[str, str]
+    _connection_thread: threading.ReturningThread,
+    session_data: session.SessionData,
+    _params: dict[str, str],
 ) -> tuple[session.SessionData, list[str]]:
     return session_data, []
 
@@ -39,16 +41,17 @@ def apply_template(data: list[str], heading: str) -> str:
 
 @xray_recorder.capture("## Building skills body")
 def build(
-    table_name: str, session_data: dict[str, str], *_args, **_kwargs
+    connection_thread: threading.ReturningThread,
+    session_data: dict[str, str],
+    *_args,
+    **_kwargs,
 ) -> return_.Returnable:
     logger.debug("Starting skills build")
-    ddb_client = boto3.client("dynamodb")
+    table_name, ddb_client, _ = cast(types.ConnectionThreadResultType, connection_thread.join())
     localization: str = session_data.get("local", "en")
     heading: str = get_heading(ddb_client, localization, table_name)
     data: list[str] = get_data(ddb_client, localization, table_name)
-    return return_.http(
-        body=apply_template(data=data, heading=heading), status_code=200
-    )
+    return return_.http(body=apply_template(data=data, heading=heading), status_code=200)
 
 
 @xray_recorder.capture("## Getting skills data")

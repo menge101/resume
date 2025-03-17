@@ -91,9 +91,7 @@ class Translation(Construct):
             self,
             "translation-success",
             event_bus=event_bus,
-            event_pattern=events.EventPattern(
-                source=["aws.translate"], detail={"jobStatus": ["COMPLETED"]}
-            ),
+            event_pattern=events.EventPattern(source=["aws.translate"], detail={"jobStatus": ["COMPLETED"]}),
         )
         rule.add_target(targets.LambdaFunction(cast(lam.IFunction, function)))
 
