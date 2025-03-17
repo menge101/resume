@@ -50,9 +50,7 @@ class GithubIdp(Construct):
                         "s3:PutObject*",
                     ],
                     resources=["*"],
-                    conditions={
-                        "StringNotEquals": {"s3:ResourceAccount": Aws.ACCOUNT_ID}
-                    },
+                    conditions={"StringNotEquals": {"s3:ResourceAccount": Aws.ACCOUNT_ID}},
                 ),
                 iam.PolicyStatement(
                     sid="PipelineCrossAccountKMSperms",
@@ -64,9 +62,7 @@ class GithubIdp(Construct):
                         "kms:GenerateDataKey*",
                     ],
                     resources=["*"],
-                    conditions={
-                        "StringEquals": {"kms:ViaService": "s3.us-east-1.amazonaws.com"}
-                    },
+                    conditions={"StringEquals": {"kms:ViaService": "s3.us-east-1.amazonaws.com"}},
                 ),
                 iam.PolicyStatement(
                     sid="AllowPassRole",
@@ -118,12 +114,8 @@ class GithubIdp(Construct):
             "ghidp_role",
             assumed_by=iam.WebIdentityPrincipal(open_id_provider_arn).with_conditions(
                 {
-                    "StringLike": {
-                        "token.actions.githubusercontent.com:sub": ["repo:menge101/*"]
-                    },
-                    "StringEquals": {
-                        "token.actions.githubusercontent.com:aud": ["sts.amazonaws.com"]
-                    },
+                    "StringLike": {"token.actions.githubusercontent.com:sub": ["repo:menge101/*"]},
+                    "StringEquals": {"token.actions.githubusercontent.com:aud": ["sts.amazonaws.com"]},
                 }
             ),
             managed_policies=[policy],

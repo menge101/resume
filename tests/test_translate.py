@@ -1,25 +1,5 @@
-from pytest import fixture, mark, raises
+from pytest import mark, raises
 from lib import translate
-
-
-@fixture
-def boto3_mock(mocker):
-    return mocker.patch("lib.translate.boto3")
-
-
-@fixture
-def boto3_session_mock(mocker):
-    return mocker.patch("lib.translate.session.boto3")
-
-
-@fixture
-def client_mock(boto3_mock):
-    return boto3_mock.client
-
-
-@fixture
-def resource_mock(boto3_mock):
-    return boto3_mock.resource
 
 
 def test_get_existing_data(client_mock, table_name):
@@ -33,9 +13,9 @@ def test_get_existing_data(client_mock, table_name):
     assert observed == expected
 
 
-def test_act_open(boto3_mock, boto3_session_mock, session_data, session_id, table_name):
+def test_act_open(connection_thread_mock, session_data, session_id, table_name):
     params = {"action": "open"}
-    observed = translate.act(table_name, session_data, params)
+    observed = translate.act(connection_thread_mock, session_data, params)
     expected = (
         {
             "id_": "1234567890",
@@ -48,12 +28,8 @@ def test_act_open(boto3_mock, boto3_session_mock, session_data, session_id, tabl
     assert observed == expected
 
 
-def test_act_choose(
-    boto3_mock, boto3_session_mock, session_data, session_id, resource_mock, table_name
-):
-    resource_mock.Table.return_value.get_item.return_value = {
-        "Item": {"languages": ["en, ne, fr, xx"]}
-    }
+def test_act_choose(connection_thread_mock, session_data, session_id, resource_mock, table_name):
+    resource_mock.get_item.return_value = {"Item": {"languages": ["en, ne, fr, xx"]}}
     params = {"action": "FR"}
     expected = (
         {
@@ -64,7 +40,7 @@ def test_act_choose(
         },
         ["language-updated"],
     )
-    observed = translate.act(table_name, session_data, params)
+    observed = translate.act(connection_thread_mock, session_data, params)
     assert observed == expected
 
 
@@ -75,12 +51,8 @@ def test_act_invalid_session(key_to_remove, session_data):
         translate.act("", session_data, {})
 
 
-def test_act_init(
-    boto3_mock, boto3_session_mock, session_data, session_id, resource_mock, table_name
-):
-    resource_mock.Table.return_value.get_item.return_value = {
-        "Item": {"languages": ["en, ne, fr, xx"]}
-    }
+def test_act_init(connection_thread_mock, session_data, session_id, resource_mock, table_name):
+    resource_mock.get_item.return_value = {"Item": {"languages": ["en, ne, fr, xx"]}}
     params = {"action": "init"}
     expected = (
         {
@@ -91,7 +63,7 @@ def test_act_init(
         },
         [],
     )
-    observed = translate.act(table_name, session_data, params)
+    observed = translate.act(connection_thread_mock, session_data, params)
     assert observed == expected
 
 
@@ -115,11 +87,9 @@ def test_build_unexpected_state(mocker, session_data, table_name):
     logger_mock.warning.assert_called()
 
 
-def test_build_open(resource_mock, session_data, table_name):
+def test_build_open(connection_thread_mock, resource_mock, session_data, table_name):
     session_data["translate"]["state"] = "open"
-    resource_mock.return_value.Table.return_value.get_item.return_value = {
-        "Item": {"languages": ["en", "ne", "fr", "xx"]}
-    }
+    resource_mock.get_item.return_value = {"Item": {"languages": ["en", "ne", "fr", "xx"]}}
     expected = {
         "body": '<div id="language-picker" class="left-side no-padding no-margin"><ul '
         'class="no-margin no-padding no-bullets"><li hx-trigger="click" '
@@ -145,11 +115,11 @@ def test_build_open(resource_mock, session_data, table_name):
         "isBase64Encoded": False,
         "statusCode": 200,
     }
-    observed = translate.build(table_name, session_data)
+    observed = translate.build(connection_thread_mock, session_data)
     assert observed == expected
 
 
-def test_build_closed(session_data, table_name):
+def test_build_closed(connection_thread_mock, session_data, table_name):
     expected = {
         "body": '<div id="language-picker" class="left-side no-padding no-margin" '
         'hx-trigger="click" hx-swap="outerHTML swap:100ms" '
@@ -162,5 +132,5 @@ def test_build_closed(session_data, table_name):
         "isBase64Encoded": False,
         "statusCode": 200,
     }
-    observed = translate.build(table_name, session_data)
+    observed = translate.build(connection_thread_mock, session_data)
     assert observed == expected

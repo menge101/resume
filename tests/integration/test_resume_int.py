@@ -78,9 +78,7 @@ def yolo():
 @fixture
 def session(resource, session_id, table):
     tbl = resource.Table(table)
-    tbl.put_item(
-        Item={"pk": "session", "sk": session_id, "id_": session_id, "local": "en"}
-    )
+    tbl.put_item(Item={"pk": "session", "sk": session_id, "id_": session_id, "local": "en"})
     return session_id
 
 

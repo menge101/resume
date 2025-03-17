@@ -1,5 +1,6 @@
 from lens import lens
-from typing import Any
+from lib import resume, threading, types
+from typing import Any, cast
 import boto3
 import logging
 import os
@@ -10,38 +11,34 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging_level)
 
 
-def add_supported(resource, table_name: str, language_code: str) -> bool:
-    languages: list[str] = get_supported(resource, table_name)
+def add_supported(connection_thread: threading.ReturningThread, language_code: str) -> bool:
+    languages: list[str] = get_supported(connection_thread)
     language_code = language_code.lower()
     if language_code in languages:
         return True
     languages.append(language_code)
-    tbl = resource.Table(table_name)
+    _, _, tbl = cast(types.ConnectionThreadResultType, connection_thread.join())
     tbl.put_item(Item={"pk": "languages", "sk": "none", "languages": languages})
     return True
 
 
-def remove_supported(resource, table_name: str, language_code: str) -> bool:
-    languages: list[str] = get_supported(resource, table_name)
+def remove_supported(connection_thread: threading.ReturningThread, language_code: str) -> bool:
+    languages: list[str] = get_supported(connection_thread)
     language_code = language_code.lower()
     if language_code not in languages:
         return True
     languages = [language for language in languages if language != language_code]
-    tbl = resource.Table(table_name)
+    _, _, tbl = cast(types.ConnectionThreadResultType, connection_thread.join())
     tbl.put_item(Item={"pk": "languages", "sk": "none", "languages": languages})
     return True
 
 
 def determine_unsupported(
-    ddb_rsrc, table_name: str, s3_client, bucket_name: str
+    connecting_thread: threading.ReturningThread, s3_client, bucket_name: str
 ) -> list[tuple[str, str]]:
-    supported = get_supported(ddb_rsrc, table_name)
+    supported = get_supported(connecting_thread)
     processed = get_processed(s3_client, bucket_name)
-    return [
-        (lang_key, obj_key)
-        for lang_key, obj_key in processed.items()
-        if lang_key not in supported
-    ]
+    return [(lang_key, obj_key) for lang_key, obj_key in processed.items() if lang_key not in supported]
 
 
 def get_keys(s3_client, s3_uri: str) -> list[str]:
@@ -61,8 +58,8 @@ def get_processed(s3_client, bucket: str) -> dict[str, str]:
     return languages
 
 
-def get_supported(resource, table_name: str) -> list[str]:
-    tbl = resource.Table(table_name)
+def get_supported(connection_thread: threading.ReturningThread) -> list[str]:
+    _, _, tbl = cast(types.ConnectionThreadResultType, connection_thread.join())
     response = tbl.get_item(Key={"pk": "languages", "sk": "none"})
     return lens.focus(response, ["Item", "languages"], default_result=[])
 
@@ -71,7 +68,7 @@ def handler(event, context):
     logger.debug(event)
     logger.debug(str(context))
     try:
-        table_name = os.environ["ddb_table_name"]
+        os.environ["ddb_table_name"]
     except KeyError:
         raise ValueError("Missing environment variable 'ddb_table_name'")
     try:
@@ -82,11 +79,10 @@ def handler(event, context):
         src_keys_uri = os.environ["source_keys_uri"]
     except KeyError:
         raise ValueError("Missing environment variable 'source_keys_uri'")
-    ddb_rsrc = boto3.resource("dynamodb")
     s3_client = boto3.client("s3")
+    connection_thread = resume.get_table_connection()
     return update_supported(
-        ddb_rsrc=ddb_rsrc,
-        table_name=table_name,
+        connection_thread,
         s3_client=s3_client,
         dest_bucket_name=lang_bucket_name,
         src_keys_uri=src_keys_uri,
@@ -102,42 +98,34 @@ def s3_get_object_by_uri(s3_client, s3_uri: str) -> dict[str, Any]:
 
 
 def update_supported(
-    ddb_rsrc, table_name: str, s3_client, dest_bucket_name: str, src_keys_uri: str
+    connecting_thread: threading.ReturningThread,
+    s3_client,
+    dest_bucket_name: str,
+    src_keys_uri: str,
 ) -> bool:
     to_proc = determine_unsupported(
-        ddb_rsrc=ddb_rsrc,
-        table_name=table_name,
+        connecting_thread,
         s3_client=s3_client,
         bucket_name=dest_bucket_name,
     )
     keys = get_keys(s3_client=s3_client, s3_uri=src_keys_uri)
     results = []
     for lang_code, lang_obj_path in to_proc:
-        values = (
-            s3_client.get_object(Bucket=dest_bucket_name, Key=lang_obj_path)["Body"]
-            .read()
-            .decode()
-            .split("\n")
-        )
-        results.append(
-            bool(write_to_ddb(ddb_rsrc, table_name, keys, values, lang_code))
-        )
-        results.append(add_supported(ddb_rsrc, table_name, lang_code))
+        values = s3_client.get_object(Bucket=dest_bucket_name, Key=lang_obj_path)["Body"].read().decode().split("\n")
+        results.append(bool(write_to_ddb(connecting_thread, keys, values, lang_code)))
+        results.append(add_supported(connecting_thread, lang_code))
     return all(results)
 
 
 def write_to_ddb(
-    ddb_rsrc,
-    table_name: str,
+    connection_thread: threading.ReturningThread,
     language_keys: list[str],
     language_values: list[str],
     code: str,
 ) -> bool:
     if len(language_keys) != len(language_values):
-        raise ValueError(
-            f"Keys have length {len(language_keys)}, values have length {len(language_values)}, mismatch"
-        )
-    tbl = ddb_rsrc.Table(table_name)
+        raise ValueError(f"Keys have length {len(language_keys)}, values have length {len(language_values)}, mismatch")
+    _, _, tbl = cast(types.ConnectionThreadResultType, connection_thread.join())
     rows = [
         {"pk": code.lower(), "sk": language_keys[idx], "text": language_values[idx]}
         for idx in range(len(language_keys))

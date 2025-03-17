@@ -3,9 +3,10 @@ from lib import header
 
 
 @fixture
-def boto3_mock(client_raw_response, mocker):
-    boto3_mock = mocker.patch("lib.header.boto3")
-    boto3_mock.client.return_value.batch_get_item.return_value = client_raw_response
+def client_mock(client_raw_response, mocker):
+    client = mocker.MagicMock()
+    client.batch_get_item.return_value = client_raw_response
+    return client
 
 
 @fixture
@@ -27,8 +28,8 @@ def test_apply_template(fake_data):
     assert header.apply_template(fake_data)
 
 
-def test_build(boto3_mock, table_name):
-    assert header.build(table_name, {})
+def test_build(table_name, connection_thread_mock):
+    assert header.build(connection_thread_mock, {})
 
 
 def test_unpack_response(client_raw_response, fake_data, table_name):

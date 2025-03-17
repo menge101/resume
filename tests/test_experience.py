@@ -3,8 +3,15 @@ from lib import experience
 
 
 @fixture
-def client_mock(mocker):
-    return mocker.patch("lib.experience.boto3.client")
+def client_mock(data_response, mocker):
+    return mocker.Mock(name="client")
+
+
+@fixture
+def connection_thread_mock(client_mock, mocker, table_name):
+    t = mocker.Mock(name="thread")
+    t.join.return_value = table_name, client_mock, mocker.Mock(name="resource")
+    return t
 
 
 @fixture
@@ -23,9 +30,7 @@ def data_response():
             {"sk": {"S": "exp#0#location"}, "text": {"S": "Pittsburgh, PA"}},
             {
                 "sk": {"S": "exp#0#bullet#0"},
-                "text": {
-                    "S": "Implemented an event driven security remediation system "
-                },
+                "text": {"S": "Implemented an event driven security remediation system "},
             },
             {"sk": {"S": "exp#0#bullet#1"}, "text": {"S": "yo"}},
             {"sk": {"S": "exp#0#bullet#2"}, "text": {"S": "Lo"}},
@@ -47,9 +52,7 @@ def data_response_no_end():
             {"sk": {"S": "exp#0#location"}, "text": {"S": "Pittsburgh, PA"}},
             {
                 "sk": {"S": "exp#0#bullet#0"},
-                "text": {
-                    "S": "Implemented an event driven security remediation system "
-                },
+                "text": {"S": "Implemented an event driven security remediation system "},
             },
             {"sk": {"S": "exp#0#bullet#1"}, "text": {"S": "yo"}},
             {"sk": {"S": "exp#0#bullet#2"}, "text": {"S": "Lo"}},
@@ -73,26 +76,24 @@ def data_response_bullet_no_index():
             {"sk": {"S": "exp#0#location"}, "text": {"S": "Pittsburgh, PA"}},
             {
                 "sk": {"S": "exp#0#bullet"},
-                "text": {
-                    "S": "Implemented an event driven security remediation system "
-                },
+                "text": {"S": "Implemented an event driven security remediation system "},
             },
         ]
     }
 
 
-def test_build(client_mock, data_response, session_data, table_name):
-    client_mock.return_value.get_item.return_value = {"Item": {"text": {"S": "yolo"}}}
-    client_mock.return_value.query.return_value = data_response
-    observed = experience.build(table_name, session_data)
+def test_build(client_mock, connection_thread_mock, data_response, session_data):
+    client_mock.get_item.return_value = {"Item": {"text": {"S": "yolo"}}}
+    client_mock.query.return_value = data_response
+    observed = experience.build(connection_thread_mock, session_data)
     assert observed["statusCode"] == 200
     assert observed["headers"] == {"Content-Type": "text/html"}
 
 
-def test_build_no_end(client_mock, data_response_no_end, session_data, table_name):
-    client_mock.return_value.get_item.return_value = {"Item": {"text": {"S": "yolo"}}}
-    client_mock.return_value.query.return_value = data_response_no_end
-    observed = experience.build(table_name, session_data)
+def test_build_no_end(client_mock, connection_thread_mock, data_response_no_end, session_data):
+    client_mock.get_item.return_value = {"Item": {"text": {"S": "yolo"}}}
+    client_mock.query.return_value = data_response_no_end
+    observed = experience.build(connection_thread_mock, session_data)
     expected = (
         '<div hx-get="/ui/experience" hx-swap="outerHTML" '
         'hx-trigger="language-updated from:body" class="experience fade"><span '
@@ -108,14 +109,18 @@ def test_build_no_end(client_mock, data_response_no_end, session_data, table_nam
 
 
 def test_build_no_bullet_index(
-    client_mock, data_response_bullet_no_index, session_data, table_name
+    client_mock,
+    connection_thread_mock,
+    data_response_bullet_no_index,
+    session_data,
+    table_name,
 ):
-    client_mock.return_value.get_item.return_value = {"Item": {"text": {"S": "yolo"}}}
-    client_mock.return_value.query.return_value = data_response_bullet_no_index
+    client_mock.get_item.return_value = {"Item": {"text": {"S": "yolo"}}}
+    client_mock.query.return_value = data_response_bullet_no_index
     with raises(ValueError):
-        experience.build(table_name, session_data)
+        experience.build(connection_thread_mock, session_data)
 
 
-def test_act():
-    data, events = experience.act("yolo", {}, {})
+def test_act(connection_thread_mock):
+    data, events = experience.act(connection_thread_mock, {}, {})
     assert data == {}

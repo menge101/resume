@@ -2,12 +2,19 @@ boto3==1.37.10 \
     --hash=sha256:0c6eb8191b1ea4c7a139e56425399405d46e86c7e814ef497176b9af1f7ca056 \
     --hash=sha256:fc649fb4c9521f60660fd562d6bf2034753832968b0c93ec60ad30634afb1b0f
     # via -r ./requirements/language.txt
+boto3-stubs==1.37.14 \
+    --hash=sha256:e9570809f034af9a758b11aed7a8f3bc781053863c4f5fd445bccda613aaaf17
+    # via -r ./requirements/language.txt
 botocore==1.37.10 \
     --hash=sha256:7515c8dfaaf5ba02604db9cf73c172615afee976136f31d8aec628629f24029f \
     --hash=sha256:ab311982a9872eeb4e71906d3e3fcd2ba331a869d0fed16836ade7ce2e58bcea
     # via
     #   boto3
     #   s3transfer
+botocore-stubs==1.37.14 \
+    --hash=sha256:02c64f36f5be8828cf0e9c7e954088e4e1c0beda2d0f5e0c5d3d5f09ab974a3c \
+    --hash=sha256:2af28b15e379318a55f2e31cd43f4ccec87ec28ac6d19f3c692ee606bc9e82a3
+    # via boto3-stubs
 build==1.2.1 \
     --hash=sha256:526263f4870c26f26c433545579475377b2b7588b6f1eac76a001e873ae3e19d \
     --hash=sha256:75e10f767a433d9a86e50d83f418e83efc18ede923ee5ff7df93b6cb0306c5d4
@@ -18,6 +25,10 @@ jmespath==1.0.1 \
     # via
     #   boto3
     #   botocore
+mypy-boto3-dynamodb==1.37.12 \
+    --hash=sha256:0e4d7a16fb9dba7aab7ac9ba8ff3721f9696a8484b1eed693b7949164b7805ba \
+    --hash=sha256:a4b2770ec1f8d6096b5e6d863800f3ff742c86a17dfa5e6b012ed7f7ccd28921
+    # via boto3-stubs
 packaging==24.2 \
     --hash=sha256:09abb1bccd265c01f4a3aa3f7a7db064b36514d2cba19a2f694fe6150451a759 \
     --hash=sha256:c228a6dc5e932d346bc5739379109d49e8853dd8223571c7c5b55260edc0b97f
@@ -42,6 +53,14 @@ six==1.17.0 \
     --hash=sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274 \
     --hash=sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81
     # via python-dateutil
+types-awscrt==0.24.2 \
+    --hash=sha256:345ab84a4f75b26bfb816b249657855824a4f2d1ce5b58268c549f81fce6eccc \
+    --hash=sha256:5826baf69ad5d29c76be49fc7df00222281fa31b14f99e9fb4492d71ec98fea5
+    # via botocore-stubs
+types-s3transfer==0.11.4 \
+    --hash=sha256:05fde593c84270f19fd053f0b1e08f5a057d7c5f036b9884e68fb8cd3041ac30 \
+    --hash=sha256:2a76d92c07d4a3cb469e5343b2e7560e0b8078b2e03696a65407b8c44c861b61
+    # via boto3-stubs
 urllib3==2.3.0 \
     --hash=sha256:1cee9ad369867bfdbbb48b7dd50374c0967a0bb7710050facf0dd6911440e3df \
     --hash=sha256:f8c5449b3cf0861679ce7e0503c7b44b5ec981bec0d1d3795a07f1ba96f0204d

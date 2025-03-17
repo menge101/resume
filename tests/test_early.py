@@ -3,11 +3,6 @@ from lib import early
 
 
 @fixture
-def client_mock(mocker):
-    return mocker.patch("lib.experience.boto3.client")
-
-
-@fixture
 def data_response():
     return {
         "Items": [
@@ -149,18 +144,18 @@ def real_response():
     }
 
 
-def test_build(client_mock, data_response, session_data, table_name):
-    client_mock.return_value.get_item.return_value = {"Item": {"text": {"S": "yolo"}}}
-    client_mock.return_value.query.return_value = data_response
-    observed = early.build(table_name, session_data)
+def test_build(client_mock, connection_thread_mock, data_response, session_data):
+    client_mock.get_item.return_value = {"Item": {"text": {"S": "yolo"}}}
+    client_mock.query.return_value = data_response
+    observed = early.build(connection_thread_mock, session_data)
     assert observed["statusCode"] == 200
     assert observed["headers"] == {"Content-Type": "text/html"}
 
 
-def test_real(client_mock, real_response, session_data, table_name):
-    client_mock.return_value.get_item.return_value = {"Item": {"text": {"S": "yolo"}}}
-    client_mock.return_value.query.return_value = real_response
-    observed = early.build(table_name, session_data)
+def test_real(client_mock, connection_thread_mock, real_response, session_data, table_name):
+    client_mock.get_item.return_value = {"Item": {"text": {"S": "yolo"}}}
+    client_mock.query.return_value = real_response
+    observed = early.build(connection_thread_mock, session_data)
     expected = (
         '<div class="early-career fade" hx-get="/ui/early" hx-swap="outerHTML" '
         'hx-trigger="language-updated from:body"><span class="bigger">yolo</span><ul '
@@ -185,6 +180,6 @@ def test_real(client_mock, real_response, session_data, table_name):
     assert observed["body"] == expected
 
 
-def test_act():
-    data, events = early.act("yolo", {}, {})
+def test_act(connection_thread_mock):
+    data, events = early.act(connection_thread_mock, {}, {})
     assert data == {}

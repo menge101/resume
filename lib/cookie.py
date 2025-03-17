@@ -29,9 +29,7 @@ class Cookie:
         self.path = path
         self.secure = secure
         if same_site and same_site not in self.VALID_SAME_SITE:
-            raise ValueError(
-                f"Invalid samesite value: {same_site}, should be one of {self.VALID_SAME_SITE}"
-            )
+            raise ValueError(f"Invalid samesite value: {same_site}, should be one of {self.VALID_SAME_SITE}")
         if same_site == "None" and secure is False:
             raise ValueError("If SameSite=None, Secure must be True")
         self.same_site = same_site

@@ -28,9 +28,7 @@ class Production(Stage):
         origin_request_policy_props = cf.OriginRequestPolicyProps(
             cookie_behavior=cf.OriginRequestCookieBehavior.all(),
             header_behavior=cf.OriginRequestHeaderBehavior.none(),
-            query_string_behavior=cf.OriginRequestQueryStringBehavior.allow_list(
-                "action"
-            ),
+            query_string_behavior=cf.OriginRequestQueryStringBehavior.allow_list("action"),
         )
         resume = Resume(
             self,
@@ -48,8 +46,7 @@ class Production(Stage):
             pass_role_arn="arn:aws:iam::473626866269:role/cdk-hnb659fds-cfn-exec-role-473626866269-us-east-1",
             staging_bucket_arn="arn:aws:s3:::cdk-hnb659fds-assets-473626866269-us-east-1",
             cdk_bootstrap_version_param_arn=(
-                "arn:aws:ssm:us-east-1:473626866269:parameter"
-                "/cdk-bootstrap/hnb659fds/version"
+                "arn:aws:ssm:us-east-1:473626866269:parameter/cdk-bootstrap/hnb659fds/version"
             ),
             github_open_id_provider_arn="arn:aws:iam::473626866269:oidc-provider/token.actions.githubusercontent.com",
         )
@@ -73,9 +70,7 @@ class Development(Stage):
         origin_policy_props = cf.OriginRequestPolicyProps(
             cookie_behavior=cf.OriginRequestCookieBehavior.all(),
             header_behavior=cf.OriginRequestHeaderBehavior.none(),
-            query_string_behavior=cf.OriginRequestQueryStringBehavior.allow_list(
-                "action"
-            ),
+            query_string_behavior=cf.OriginRequestQueryStringBehavior.allow_list("action"),
         )
         resume = Resume(
             self,
@@ -93,8 +88,7 @@ class Development(Stage):
             pass_role_arn="arn:aws:iam::779846793683:role/cdk-hnb659fds-cfn-exec-role-779846793683-us-east-1",
             staging_bucket_arn="arn:aws:s3:::cdk-hnb659fds-assets-779846793683-us-east-1",
             cdk_bootstrap_version_param_arn=(
-                "arn:aws:ssm:us-east-1:779846793683:parameter"
-                "/cdk-bootstrap/hnb659fds/version"
+                "arn:aws:ssm:us-east-1:779846793683:parameter/cdk-bootstrap/hnb659fds/version"
             ),
         )
         translation.TranslationStack(
@@ -143,9 +137,7 @@ class Resume(Stack):
         **kwargs,
     ) -> None:
         super().__init__(scope, id_, **kwargs)
-        cache_policy: cf.CachePolicy = cf.CachePolicy(
-            self, "cache-policy", **cache_policy_props._values
-        )
+        cache_policy: cf.CachePolicy = cf.CachePolicy(self, "cache-policy", **cache_policy_props._values)
         origin_request_policy: cf.OriginRequestPolicy = cf.OriginRequestPolicy(
             self, "origin-request-policy", **origin_request_policy_props._values
         )

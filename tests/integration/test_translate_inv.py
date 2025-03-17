@@ -32,9 +32,7 @@ def test_get_supported_languages(resource, table):
 
 
 def test_get_processed_languages(client_s3, translation_destination_bucket_name):
-    assert translate.get_processed_languages(
-        client_s3, translation_destination_bucket_name
-    )
+    assert translate.get_processed_languages(client_s3, translation_destination_bucket_name)
 
 
 def test_s3_get_object_by_uri(client_s3, translation_keys_s3_uri):

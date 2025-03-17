@@ -2,6 +2,29 @@ from pytest import fixture
 import os
 
 
+@fixture(autouse=True)
+def disable_thread_call_maybe(connection_thread_mock, mocker, request):
+    if "thread_test" not in request.keywords:
+        mocker.patch("lib.resume.threading.ReturningThread", return_value=connection_thread_mock)
+
+
+@fixture(autouse=True)
+def boto3_mock(mocker):
+    return mocker.patch("lib.resume.boto3"), mocker.patch("lib.language.boto3")
+
+
+@fixture
+def client_mock(mocker):
+    return mocker.Mock(name="client")
+
+
+@fixture
+def connection_thread_mock(client_mock, mocker, resource_mock, table_name):
+    t = mocker.Mock(name="thread")
+    t.join.return_value = table_name, client_mock, resource_mock
+    return t
+
+
 @fixture
 def fake_data():
     return {
@@ -31,6 +54,11 @@ def session_data(session_id):
 @fixture
 def session_id():
     return "1234567890"
+
+
+@fixture
+def resource_mock(mocker):
+    return mocker.Mock(name="resource")
 
 
 @fixture

@@ -22,7 +22,5 @@ class HostedZone(Stack):
             self,
             "alias",
             zone=zone,
-            target=r53.RecordTarget.from_alias(
-                r53_targets.CloudFrontTarget(cf_distribution)
-            ),
+            target=r53.RecordTarget.from_alias(r53_targets.CloudFrontTarget(cf_distribution)),
         )

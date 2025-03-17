@@ -29,9 +29,7 @@ def read_ddb_table(_ctx, table_name, write_path):
     with open(write_path, "w") as csvoutput:
         writer = csv.DictWriter(csvoutput, fieldnames=["pk", "sk", "text", "languages"])
         writer.writeheader()
-        for page in pagi.paginate(
-            TableName=table_name, PaginationConfig={"PageSize": 100}
-        ):
+        for page in pagi.paginate(TableName=table_name, PaginationConfig={"PageSize": 100}):
             items = page["Items"]
             for item in items:
                 try:
@@ -54,9 +52,7 @@ def load_ddb_table(_ctx, table_name, source_file_path):
 
 
 @task
-def upload_dir_content_to_bucket(
-    _ctx, source_dir, target_bucket, target_prefix, content_type=None
-):
+def upload_dir_content_to_bucket(_ctx, source_dir, target_bucket, target_prefix, content_type=None):
     s3 = boto3.client("s3")
     files = os.listdir(source_dir)
     for file in files:
